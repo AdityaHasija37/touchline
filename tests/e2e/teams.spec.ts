@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 import { createConfirmedUser, createTeam, signIn } from "./helpers/users";
 
 const SEVEN = ["Sam Keeper", "Alex Stone", "Jo Banks", "Riley Cole", "Max Hart", "Kai Reed", "Lee Moss"];

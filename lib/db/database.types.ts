@@ -23,7 +23,99 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "players": {
+            "lineup_assignments": {
+                  Row: {
+                    "formation_slot": number | null,"plan_id": string,"player_id": string,"position_label": string | null,"role": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "formation_slot"?: number | null,"plan_id": string,"player_id": string,"position_label"?: string | null,"role": string
+                  }
+                  Update: {
+                    "formation_slot"?: number | null,"plan_id"?: string,"player_id"?: string,"position_label"?: string | null,"role"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "lineup_assignments_plan_id_fkey"
+      columns: ["plan_id"]
+isOneToOne: false
+      referencedRelation: "match_plans"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "lineup_assignments_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "players"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"match_plans": {
+                  Row: {
+                    "draft_status": string,"id": string,"match_id": string,"objective": string | null,"updated_at": string,"version": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "draft_status"?: string,"id"?: string,"match_id": string,"objective"?: string | null,"updated_at"?: string,"version"?: number
+                  }
+                  Update: {
+                    "draft_status"?: string,"id"?: string,"match_id"?: string,"objective"?: string | null,"updated_at"?: string,"version"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "match_plans_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: true
+      referencedRelation: "matches"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"matches": {
+                  Row: {
+                    "created_at": string,"id": string,"kickoff_at": string,"kickoff_tz": string,"match_format": number,"opponent_name": string,"status": string,"team_id": string,"updated_at": string,"venue": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"kickoff_at": string,"kickoff_tz": string,"match_format": number,"opponent_name": string,"status"?: string,"team_id": string,"updated_at"?: string,"venue"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"kickoff_at"?: string,"kickoff_tz"?: string,"match_format"?: number,"opponent_name"?: string,"status"?: string,"team_id"?: string,"updated_at"?: string,"venue"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "matches_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "teams"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"plan_sections": {
+                  Row: {
+                    "content_json": NonNullable<Json>,"id": string,"include_in_briefing": boolean,"plan_id": string,"section_type": string,"sort_order": number,"tactic_id": string | null,"title": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "content_json"?: NonNullable<Json>,"id"?: string,"include_in_briefing"?: boolean,"plan_id": string,"section_type": string,"sort_order": number,"tactic_id"?: string | null,"title": string
+                  }
+                  Update: {
+                    "content_json"?: NonNullable<Json>,"id"?: string,"include_in_briefing"?: boolean,"plan_id"?: string,"section_type"?: string,"sort_order"?: number,"tactic_id"?: string | null,"title"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "plan_sections_plan_id_fkey"
+      columns: ["plan_id"]
+isOneToOne: false
+      referencedRelation: "match_plans"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "plan_sections_tactic_id_fkey"
+      columns: ["tactic_id"]
+isOneToOne: false
+      referencedRelation: "tactics"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"players": {
                   Row: {
                     "archived_at": string | null,"created_at": string,"id": string,"name": string,"preferred_positions": (string)[],"shirt_number": number | null,"team_id": string,"updated_at": string
                   }
@@ -97,8 +189,23 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "is_team_owner":
+            "is_match_owner":
+{ Args: { "p_match_id": string }; Returns: boolean
+                           },
+"is_plan_owner":
+{ Args: { "p_plan_id": string }; Returns: boolean
+                           },
+"is_team_owner":
 { Args: { "p_team_id": string }; Returns: boolean
+                           },
+"move_plan_section":
+{ Args: { "p_delta": number,"p_section_id": string }; Returns: undefined
+                           },
+"plan_context":
+{ Args: { "p_plan_id": string }; Returns: Record<string, unknown>
+                           },
+"save_lineup":
+{ Args: { "p_lineup": Json,"p_plan_id": string }; Returns: undefined
                            }
           }
           Enums: {

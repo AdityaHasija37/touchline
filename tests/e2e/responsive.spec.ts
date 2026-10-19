@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 import { createConfirmedUser, createTeam, signIn } from "./helpers/users";
 
 test("NFR-01: dashboard and squad have no horizontal overflow at 375px", async ({ page }) => {

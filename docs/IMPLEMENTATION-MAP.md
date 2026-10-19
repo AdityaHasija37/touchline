@@ -50,7 +50,7 @@ proxy.ts                           Session refresh + redirect unauthenticated /a
 |---|---|---|
 | profiles | `id = auth.uid()` | cascade from auth.users |
 | teams | `owner_id = auth.uid()` | cascades to everything below, which revokes links (DEC-07) |
-| players | team → owner | **archive only** in UI; FK from lineups is `restrict` |
+| players | team → owner | **archive only** (no DELETE grant); lineup FK cascades only when the whole team/account goes (see migration `…220000_lineup_fk_cascade`) |
 | tactics | team → owner | plan_sections.tactic_id `set null`; snapshots unaffected |
 | matches | team → owner | cascade to plan |
 | match_plans | match (unique) → team → owner | cascade |

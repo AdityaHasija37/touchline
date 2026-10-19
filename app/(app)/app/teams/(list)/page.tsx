@@ -6,11 +6,13 @@ import { PageHeader } from "@/components/app/page-header";
 import { buttonVariants } from "@/components/ui/button";
 import { formatLabel } from "@/lib/domain/format";
 import { listTeams } from "@/lib/db/teams";
+import { nextMatches } from "@/lib/db/matches";
 
 export const metadata: Metadata = { title: "Your teams · Touchline" };
 
 export default async function TeamsPage() {
   const teams = await listTeams();
+  const next = await nextMatches(teams.map((t) => t.id));
 
   if (teams.length === 0) {
     return (
@@ -56,6 +58,16 @@ export default async function TeamsPage() {
               </div>
               <p className="mt-4 text-sm text-muted-foreground">
                 {t.activePlayers === 0 ? "No players yet" : `${t.activePlayers} player${t.activePlayers === 1 ? "" : "s"}`}
+              </p>
+              <p className="mt-1 truncate text-sm">
+                {next[t.id] ? (
+                  <>
+                    <span className="text-muted-foreground">Next: </span>vs {next[t.id].opponentName} ·{" "}
+                    {next[t.id].kickoffShortLabel}
+                  </>
+                ) : (
+                  <span className="text-muted-foreground">No upcoming fixture</span>
+                )}
               </p>
             </Link>
           </li>

@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 import { PASSWORD, confirmationLink, createConfirmedUser, signIn, uniqueEmail } from "./helpers/users";
 
 test.describe("AUTH-01 account access", () => {

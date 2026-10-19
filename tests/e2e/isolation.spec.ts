@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 import { createConfirmedUser, createTeam, signIn } from "./helpers/users";
 
 test("QA-02 / SEC-01: user B cannot see user A's team via manipulated URLs", async ({ browser }) => {

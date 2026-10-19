@@ -26,7 +26,7 @@ Status values: **Adopted** (a spec default or an owner decision), **Proposed** (
 |---|---|---|---|
 | DEC-06 | TECH-003 lists REST routes "illustrative" | Owner mutations use **server actions** with Zod. Route handlers only for the PDF and anything that needs HTTP semantics | One codebase (ADR-01). Same auth and validation either way |
 | DEC-07 | Team deletion vs. existing share links | Deleting a team cascades and **revokes** its published links. Viewers see the generic unavailable page | Deleting a team should remove its data. Keeping public copies alive afterwards would surprise people |
-| DEC-08 | QA-10 says "delete or archive player" | Players are **archive-only** in the UI. The FK from lineups is `restrict`. Snapshots embed name and number anyway | TEAM-02 only specifies archive |
+| DEC-08 | QA-10 says "delete or archive player" | Players are **archive-only** (no DELETE grant). The lineup FK is `cascade`, so it only fires when a whole team or account is deleted (`restrict` broke team deletion; fixed in Phase 4). Snapshots embed name and number anyway | TEAM-02 only specifies archive |
 | DEC-09 | "Timezone-aware kickoff" | Store `kickoff_at timestamptz` plus `kickoff_tz` (IANA, captured from the browser) and display in that zone | A fixture's local time shouldn't move when viewed from elsewhere |
 | DEC-10 | Public token read path | SECURITY DEFINER RPC `get_published_snapshot(token)` hashes the token in SQL. No service-role key in request paths | Least privilege. Anon has zero table grants |
 | DEC-11 | Who may export PDF | The owner, or anyone holding a valid unrevoked token (TECH-003 §5) | As specified |
@@ -46,6 +46,13 @@ Status values: **Adopted** (a spec default or an owner decision), **Proposed** (
 | DEC-28 | Tool persistence and arrow style | Draw tools stay active for repeated drawing (Esc/V returns to select). The drawn item is selected; changing its arrow style also sets the style for the next arrow | Fewer clicks when sketching several runs |
 | DEC-29 | Zoom fit (UX-002 S05 bottom bar) | Not built: the pitch always auto-fits its container, so a fit button would do nothing. Revisit if free zoom/pan is added | Avoids a control with no effect |
 | DEC-30 | Text wrapping | One deterministic word wrap (22 characters per line) shared by the Konva editor and the SVG renderer | Keeps editor, presenter and PDF identical |
+| DEC-31 | Format of an existing fixture when the team format changes | Each match stores `match_format` at creation; later team changes never alter it. Board sections in another format show a warning (non-blocking) | PRD §6 "Team format changes do not silently alter existing match snapshots" |
+| DEC-32 | Private notes (D-05) | Every section has public notes plus a separate private note that is never copied into a published briefing. Sections are included by default; the Phase 5 publish review shows exactly what goes out | Keeps coach-only context next to the plan without risking exposure |
+| DEC-33 | Section ordering control | Up/down buttons calling an RPC that swaps neighbours, not drag-and-drop | Keyboard-accessible by default and atomic |
+| DEC-34 | Lineup saves | Whole lineup replaced atomically by `save_lineup` RPC; client serialises requests so the latest picks win. Starter cap and same-team checks enforced again by a DB trigger | MATCH-02; no partially saved lineups |
+| DEC-35 | Publish readiness | A pure `planReadiness()` drives the S07 checklist now and will gate the publish action in Phase 5. Blocking: starters ≠ format, no included sections, a board section without a tactic. Warnings: archived starters, format mismatch, missing objective | QA-05; one rule set, used in UI and server |
+| DEC-36 | Where kickoff times are formatted | Server only; passed to client components as text | Node and browser ICU data disagree ("GMT" vs "GMT+0") and caused hydration mismatches |
+| DEC-37 | Plan concurrency | Last write wins per field for plan text (single owner, field-level saves). Lineup is replaced as a whole. Boards keep optimistic concurrency (DEC-20) | Low conflict risk in MVP (ADR-04); revisit with multi-coach roles |
 | DEC-13 | Board format vs. team format | Each tactic stores its own `format`. Changing the team format warns and needs explicit conversion for drafts, and never touches snapshots | PRD §6 |
 
 ## Open (blocking a later phase)
@@ -61,6 +68,7 @@ Status values: **Adopted** (a spec default or an owner decision), **Proposed** (
 | Date | Change |
 |---|---|
 | 19 Oct 2026 | Register created at M0 |
+| 19 Oct 2026 | Phase 4: DEC-31 to DEC-37; DEC-08 revised (lineup FK cascade) |
 | 19 Oct 2026 | Phase 3: DEC-25 to DEC-30 added |
 | 19 Oct 2026 | Phase 2: DEC-19 to DEC-24 added |
 | 19 Oct 2026 | Q-01, Q-02 resolved (DEC-14/15). DEC-16 to DEC-18 added in Phase 1 |

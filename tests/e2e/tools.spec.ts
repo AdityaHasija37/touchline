@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 import { createConfirmedUser, createTeam, signIn } from "./helpers/users";
 import { activeTool, createTactic, dragOnPitch, expectSaved, geom, objectList, objectPos, pitchPx, waitForCanvas } from "./helpers/editor";
 
