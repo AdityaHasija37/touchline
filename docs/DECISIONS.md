@@ -34,6 +34,12 @@ Status values: **Adopted** (a spec default or an owner decision), **Proposed** (
 | DEC-16 | Position vocabulary unspecified | A fixed set: GK / DEF / MID / FWD, enforced in Zod and a DB CHECK | Grassroots-friendly vocabulary. Finer roles can come later |
 | DEC-17 | Shirt number uniqueness unspecified | Optional and **not** unique per team | Grassroots squads often share or skip numbers. Lineups use player IDs, not numbers |
 | DEC-18 | How to confirm team deletion | Require typing the team name. The dialog lists what gets deleted | UX-002 §10, destructive actions |
+| DEC-19 | When to save the board | Autosave 1.5 s after edits stop, plus Save and Cmd/Ctrl+S. A failed save pauses autosave until Retry; a conflict stops it entirely | UX-002 §5 "Saving… then Saved"; never show success before the server acknowledges |
+| DEC-20 | What counts as a stale write | `version` increments only when `board_json` changes, set by a DB trigger and not client-writable. Renames never conflict with an open editor | Avoids false conflicts from renaming in another tab |
+| DEC-21 | Conflict recovery options | "Save mine as a copy" (new tactic) or "Discard mine and reload". No automatic merge in MVP | UX-002 §7: prevent overwrite; prompt reload or duplicate |
+| DEC-22 | Linking board markers to players | Server rejects boards that link players outside the tactic's team. Labels default to the shirt number, else initials | Stops a crafted board from referencing other rosters |
+| DEC-23 | Marker colour vs. grass | Team colour is darkened until it reaches 3:1 contrast against the pitch | Grass green was nearly invisible on green |
+| DEC-24 | Board limits | Presets filtered by team format. Max `format` markers per side, one ball, 200 objects, 256 KB JSON | TAC-01 "presets cannot silently introduce 11 players" |
 | DEC-13 | Board format vs. team format | Each tactic stores its own `format`. Changing the team format warns and needs explicit conversion for drafts, and never touches snapshots | PRD §6 |
 
 ## Open (blocking a later phase)
@@ -49,4 +55,5 @@ Status values: **Adopted** (a spec default or an owner decision), **Proposed** (
 | Date | Change |
 |---|---|
 | 19 Oct 2026 | Register created at M0 |
+| 19 Oct 2026 | Phase 2: DEC-19 to DEC-24 added |
 | 19 Oct 2026 | Q-01, Q-02 resolved (DEC-14/15). DEC-16 to DEC-18 added in Phase 1 |

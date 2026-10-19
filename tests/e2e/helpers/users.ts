@@ -56,3 +56,9 @@ export async function createTeam(page: Page, name: string, format: "5v5" | "7v7"
   await expect(page).toHaveURL(/\/app\/teams\/[0-9a-f-]{36}\/squad$/);
   return page.url().match(/teams\/([0-9a-f-]{36})/)![1];
 }
+
+/** Test-only: seed squad players straight into the local DB. */
+export async function addPlayers(teamId: string, players: { name: string; shirt_number?: number }[]) {
+  const { error } = await admin().from("players").insert(players.map((p) => ({ team_id: teamId, ...p })));
+  if (error) throw error;
+}

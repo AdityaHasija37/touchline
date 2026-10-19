@@ -57,6 +57,26 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"tactics": {
+                  Row: {
+                    "board_json": NonNullable<Json>,"board_schema_version": number,"category": string,"created_at": string,"format": number,"id": string,"name": string,"team_id": string,"updated_at": string,"version": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "board_json": NonNullable<Json>,"board_schema_version"?: number,"category"?: string,"created_at"?: string,"format": number,"id"?: string,"name": string,"team_id": string,"updated_at"?: string,"version"?: number
+                  }
+                  Update: {
+                    "board_json"?: NonNullable<Json>,"board_schema_version"?: number,"category"?: string,"created_at"?: string,"format"?: number,"id"?: string,"name"?: string,"team_id"?: string,"updated_at"?: string,"version"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "tactics_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "teams"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"teams": {
                   Row: {
                     "created_at": string,"id": string,"match_format": number,"name": string,"owner_id": string,"primary_color": string,"updated_at": string

@@ -2,7 +2,7 @@
 
 Match preparation for grassroots football captains. Roster → fixture → lineup → tactics boards → a frozen matchday briefing players can open on their phones.
 
-> Status: **in development, Phase 1 done (auth, teams, squad)**. No user research, pilot results or deployment exist yet. Specs are proposals (v0.9).
+> Status: **in development, Phase 2 done (auth, teams, squad, tactics editor core)**. No user research, pilot results or deployment exist yet. Specs are proposals (v0.9).
 
 ## Docs
 - `docs/specs/`: PRD-001, UX-002, TECH-003, PLAN-004 and the build brief (original .docx plus text copies)
@@ -32,4 +32,4 @@ npm run dev
 | `npm run db:reset` | re-apply migrations and seed |
 
 ## Local demo account
-`npm run seed:demo` creates a local-only demo user with three teams (credentials are in `scripts/seed-demo.mjs`).
+`npm run seed:demo` creates a local-only demo user with three teams and a 7v7 tactic (credentials are in `scripts/seed-demo.mjs`).
