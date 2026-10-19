@@ -16,6 +16,8 @@ Status values: **Adopted** (a spec default or an owner decision), **Proposed** (
 | DEC-02 | Local Supabase (Docker) for dev and tests; hosted free project only at deploy | Owner, 19 Oct 2026 |
 | DEC-03 | Deploy target is Vercel + Supabase cloud, never automatic | Owner, 19 Oct 2026 |
 | DEC-04 | Visual direction: light neutral UI, grass-green primary, dark high-contrast presenter (UX S09) | Owner, 19 Oct 2026 |
+| DEC-14 | Email confirmation **required** at sign-up (Q-01). Local emails go to Mailpit, and links use the token-hash flow so they work across devices | Owner, 19 Oct 2026 |
+| DEC-15 | Product name stays **Touchline**, with a minimal pitch-outline SVG mark (Q-02) | Owner, 19 Oct 2026 |
 | DEC-05 | Next 16.3.8 / React 19.3.0 rather than the latest patch releases. react-konva 19.3 needs React ≥19.3, and the newest patches were under 2 weeks old | Engineering, 19 Oct 2026 |
 
 ## Proposed (defaults I'm applying unless you object)
@@ -29,14 +31,15 @@ Status values: **Adopted** (a spec default or an owner decision), **Proposed** (
 | DEC-10 | Public token read path | SECURITY DEFINER RPC `get_published_snapshot(token)` hashes the token in SQL. No service-role key in request paths | Least privilege. Anon has zero table grants |
 | DEC-11 | Who may export PDF | The owner, or anyone holding a valid unrevoked token (TECH-003 §5) | As specified |
 | DEC-12 | Pitch geometry | 0–100 on both axes mapped onto a 68 × 105 pitch. `orientation` stored per board, default vertical | ADR-02, UX §5 |
+| DEC-16 | Position vocabulary unspecified | A fixed set: GK / DEF / MID / FWD, enforced in Zod and a DB CHECK | Grassroots-friendly vocabulary. Finer roles can come later |
+| DEC-17 | Shirt number uniqueness unspecified | Optional and **not** unique per team | Grassroots squads often share or skip numbers. Lineups use player IDs, not numbers |
+| DEC-18 | How to confirm team deletion | Require typing the team name. The dialog lists what gets deleted | UX-002 §10, destructive actions |
 | DEC-13 | Board format vs. team format | Each tactic stores its own `format`. Changing the team format warns and needs explicit conversion for drafts, and never touches snapshots | PRD §6 |
 
 ## Open (blocking a later phase)
 
 | ID | Question | Blocks | Options |
 |---|---|---|---|
-| Q-01 | Require email confirmation at sign-up? | Phase 1 | (a) On, with confirmation emails caught by Mailpit locally. (b) Off for a faster demo |
-| Q-02 | Is "Touchline" the final public name, and do you want a logo mark? | Phase 1 UI | n/a |
 | Q-03 | PDF engine (needs approval, as a major dependency) | Phase 6 | (a) `@react-pdf/renderer` drawing the pitch with its SVG primitives: pure JS, Vercel-friendly. (b) Headless Chromium printing the slide page: highest parity, heavy on serverless |
 | Q-04 | Rate limiting `/p/:token` without a paid service | Phase 5 | (a) Postgres counter per IP hash per minute. (b) Vercel's platform firewall rules. (c) In-memory, best effort |
 | Q-05 | Analytics sink (PLAN-004 §5) | Phase 6 | (a) An `analytics_events` table with the allowlisted properties only. (b) Structured server logs only |
@@ -46,3 +49,4 @@ Status values: **Adopted** (a spec default or an owner decision), **Proposed** (
 | Date | Change |
 |---|---|
 | 19 Oct 2026 | Register created at M0 |
+| 19 Oct 2026 | Q-01, Q-02 resolved (DEC-14/15). DEC-16 to DEC-18 added in Phase 1 |

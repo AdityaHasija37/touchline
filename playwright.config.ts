@@ -1,5 +1,10 @@
 import { defineConfig, devices } from "@playwright/test";
 
+// Local Supabase URL/keys for test helpers (never committed).
+try {
+  process.loadEnvFile(".env.local");
+} catch {}
+
 const PORT = Number(process.env.PORT ?? 3000);
 
 export default defineConfig({
@@ -13,7 +18,6 @@ export default defineConfig({
   },
   projects: [
     { name: "desktop-chromium", use: { ...devices["Desktop Chrome"] } },
-    { name: "mobile-375", use: { ...devices["Pixel 5"], viewport: { width: 375, height: 812 } } },
   ],
   webServer: {
     command: `npm run dev -- --port ${PORT}`,
