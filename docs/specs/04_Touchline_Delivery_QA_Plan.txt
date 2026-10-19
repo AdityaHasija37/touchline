@@ -1,0 +1,207 @@
+TOUCHLINE   /   PLAN-004
+Delivery Plan, Backlog & Validation
+Implementation sequencing, traceability, quality gates, analytics and review decisions
+Version 0.9
+Status: Proposed
+Owner: Product
+17 Oct 2026
+Decision status: Proposed specification. Assumptions, targets, and design choices require validation; no user research or shipped capability is claimed.
+1. Release plan and governance
+MVP is a staged six-sprint proposal, not a deadline commitment. Each sprint produces a demoable vertical slice with explicit acceptance. Maintain a decision log and change request whenever scope, privacy, product behavior, or data model changes. Owner is currently the sole builder / product lead.
+Sprint
+Outcome
+Exit evidence
+S0 · Discovery and framing
+Five interviews, prototype editor feasibility, PRD approval
+Interview notes, validated/revised problem statement, ADR review
+S1 · Foundation
+Auth, teams, roster, RLS
+Create/edit team demo; deny cross-tenant tests
+S2 · Editor
+Pitch, formation, drag, save/reopen
+7v7 persisted board demo; geometry tests
+S3 · Tactical tools
+Arrows, zones, text, undo and duplication
+Tool behavior acceptance suite
+S4 · Match planning
+Fixtures, lineup validation, ordered plan sections
+Incomplete lineup cannot publish
+S5 · Briefings & launch
+Snapshot, full screen, link revoke, PDF, polish
+Full E2E test, pilot review, launch checklist
+
+2. Prioritized backlog and traceability
+Epic / story
+Priority
+Depends on
+Related requirement
+EP1 / account access + team CRUD
+P0
+Auth + data model
+AUTH-01; TEAM-01; SEC-01
+EP2 / players and archiving
+P0
+EP1
+TEAM-02
+EP3 / formation board and persistence
+P0
+EP2
+TAC-01; TAC-02; TAC-03
+EP4 / arrows, zones, text, history
+P0/P1
+EP3
+TAC-02; TAC-04
+EP5 / fixtures and validated lineup
+P0
+EP2
+MATCH-01; MATCH-02
+EP6 / plan sections and selected tactics
+P0
+EP3; EP5
+PLAN-01
+EP7 / immutable publication and view
+P0
+EP6
+PRES-01; PRES-02
+EP8 / PDF and quality hardening
+P0
+EP7
+EXP-01; NFR-01
+
+3. Detailed user stories and definition of done
+US-01
+As a captain, I can create a 7v7 team so that my squad has a persistent workspace.
+Acceptance tests: Valid creation, duplicate names allowed across owners, no anonymous write, redirect after save.
+US-02
+As a captain, I can register and archive players so that lineups use accurate team identities.
+Acceptance tests: Archived players omitted from new lineup picker; historic snapshots remain readable.
+US-03
+As a captain, I can move and annotate player positions so that I can explain my shape.
+Acceptance tests: Pointer drag works; arrows persist; reload has same positions; limited to board bounds.
+US-04
+As a captain, I can create a fixture and select a starting lineup so that I can prepare a specific opponent plan.
+Acceptance tests: Cannot assign duplicate player; starter count enforced; draft supports incomplete lineup.
+US-05
+As a captain, I can turn a plan into a full-screen briefing so that I can coach before kickoff.
+Acceptance tests: Slide order preserved; next/back keyboard; published snapshot does not drift.
+US-06
+As a captain, I can share and revoke a read-only link so that players can view only my chosen content.
+Acceptance tests: Link displays no edit controls; revoked token fails; anonymous viewer cannot enumerate roster.
+US-07
+As a captain, I can export PDF so that I can print or distribute the plan.
+Acceptance tests: Readable pitch, player names and notes; correct slide order, download works.
+Definition of Done for every story: feature matches UX copy and acceptance criteria; typed validation; authorization covered; relevant automated tests pass; empty/error states handled; no secrets exposed; accessible labels/focus; updated docs and demo evidence.
+4. Test matrix: minimum critical paths
+Test ID
+Scenario
+Expected result
+QA-01
+Unauthenticated user opens private editor
+Redirect or deny; no private response
+QA-02
+User A accesses User B tactic ID
+403/404, no data leak
+QA-03
+Move player, add arrow, reload
+Geometry and style identical
+QA-04
+Save same tactic from two stale tabs
+Conflict surfaced, no silent overwrite
+QA-05
+7v7 plan has only 6 starters
+Publish disabled; draft retained
+QA-06
+Publish plan, edit original tactic
+Existing published snapshot unchanged
+QA-07
+Revoke link then open it
+Safe unavailable page
+QA-08
+Export published plan
+PDF matches section order and content
+QA-09
+View published plan on phone
+No horizontal overflow / unreadable pitch
+QA-10
+Delete or archive player used historically
+Historical published slide still renders
+
+5. Analytics specification
+Event
+Trigger
+Safe properties
+team_created
+Server acknowledges creation
+format, team_id pseudonymous
+player_added
+Player saved successfully
+team_id; no name
+tactic_saved
+Server accepts updated version
+format, object_count, duration_ms
+match_plan_created
+First plan persisted
+format, sections_count
+plan_published
+Snapshot commit succeeded
+slide_count, format
+presentation_opened
+Reader viewer loaded
+viewer_type(owner/public), slide_count
+pdf_exported
+Export completed
+slide_count, latency_ms
+share_revoked
+Owner revokes snapshot
+link_age_days
+
+Do not transmit player names, coaching notes, email addresses, raw share tokens, or complete board JSON as analytics event properties. Aggregate by team and user pseudonymous IDs; provide a deletion path if analytics is ever tied to user accounts.
+6. Product experiment and discovery protocol
+Discovery guide: (1) Walk me through preparation for your last match. (2) What tools did you use and where did you repeat work? (3) Show how you explained the formation. (4) What changed on the day? (5) Which artifact did players actually consult? Do not lead participants toward recommending Touchline.
+Pilot: 3–5 actual captains each prepare one upcoming match using Touchline. Observe completion unassisted, save/reopen success, whether briefing is actually used, qualitative feedback and request for reuse. Obtain permission before recording or displaying team material in a portfolio.
+7. Risk register and change log
+Risk / owner
+Likelihood x impact
+Mitigation
+Editor complexity / Engineering
+High x High
+Proof-of-concept before building adjacent features
+Public link data leakage / Engineering
+Medium x High
+Snapshot allowlist, hashing, RLS, adversarial tests
+Low grassroots adoption / Product
+Medium x High
+Interview coaches and measure matchday usage
+Export inconsistency / Engineering
+Medium x Medium
+Shared slide model and visual regression
+Scope creep / Product
+High x Medium
+MVP boundary, changelog and signoff
+
+Change request template: Change ID; requester/date; problem/evidence; affected requirement IDs; options; user impact; privacy impact; effort; decision owner; decision; release target; migration/test/doc impacts.
+8. Release readiness and handoff
+All P0 requirements have linked tests and passing proof; open P1/P2 bugs documented.
+No cross-team record access; token viewer supports revocation; service keys are server-only.
+Presentation and PDF checked with at least one 5v5, 7v7, 11v11 sample.
+Critical keyboard flows verified; reader works on mobile.
+Privacy page, error handling, backup/restore plan and incident contact documented.
+README includes setup, migrations, environment variable names (not values), test commands and demo data.
+Portfolio case study separates hypotheses, decisions, user feedback and observed outcomes.
+9. Review and signoff register
+Artifact
+Reviewer
+Status
+PRD-001
+Product owner
+Pending review
+UX-002
+Product + sample coach
+Pending review
+TECH-003
+Engineering / security reviewer
+Pending review
+PLAN-004
+Product owner
+Pending review
+

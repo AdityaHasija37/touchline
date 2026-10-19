@@ -1,0 +1,48 @@
+# Decision Register
+
+The brief says: prefer the documented default, log ambiguity here, and don't build conflicting behaviours side by side.
+Status values: **Adopted** (a spec default or an owner decision), **Proposed** (my default, open to change), **Open** (needs an owner answer before the phase it blocks).
+
+## Adopted
+
+| ID | Decision | Source |
+|---|---|---|
+| D-01 | Formats are 5v5, 7v7 and 11v11; 9v9 later | PRD §8 default |
+| D-02 | Players view published briefings without login; nothing is editable | PRD §8 default |
+| D-03 | Single owner per team in MVP | PRD §8, ADR-04 |
+| D-04 | No animations; sequences are separate boards | PRD §8 |
+| D-05 | Private notes allowed; each section must be explicitly included before publish | PRD §8 |
+| DEC-01 | Repo at `~/code/touchline`; specs copied to `docs/specs/` | Owner, 19 Oct 2026 |
+| DEC-02 | Local Supabase (Docker) for dev and tests; hosted free project only at deploy | Owner, 19 Oct 2026 |
+| DEC-03 | Deploy target is Vercel + Supabase cloud, never automatic | Owner, 19 Oct 2026 |
+| DEC-04 | Visual direction: light neutral UI, grass-green primary, dark high-contrast presenter (UX S09) | Owner, 19 Oct 2026 |
+| DEC-05 | Next 16.3.8 / React 19.3.0 rather than the latest patch releases. react-konva 19.3 needs React ≥19.3, and the newest patches were under 2 weeks old | Engineering, 19 Oct 2026 |
+
+## Proposed (defaults I'm applying unless you object)
+
+| ID | Ambiguity | Proposed default | Why |
+|---|---|---|---|
+| DEC-06 | TECH-003 lists REST routes "illustrative" | Owner mutations use **server actions** with Zod. Route handlers only for the PDF and anything that needs HTTP semantics | One codebase (ADR-01). Same auth and validation either way |
+| DEC-07 | Team deletion vs. existing share links | Deleting a team cascades and **revokes** its published links. Viewers see the generic unavailable page | Deleting a team should remove its data. Keeping public copies alive afterwards would surprise people |
+| DEC-08 | QA-10 says "delete or archive player" | Players are **archive-only** in the UI. The FK from lineups is `restrict`. Snapshots embed name and number anyway | TEAM-02 only specifies archive |
+| DEC-09 | "Timezone-aware kickoff" | Store `kickoff_at timestamptz` plus `kickoff_tz` (IANA, captured from the browser) and display in that zone | A fixture's local time shouldn't move when viewed from elsewhere |
+| DEC-10 | Public token read path | SECURITY DEFINER RPC `get_published_snapshot(token)` hashes the token in SQL. No service-role key in request paths | Least privilege. Anon has zero table grants |
+| DEC-11 | Who may export PDF | The owner, or anyone holding a valid unrevoked token (TECH-003 §5) | As specified |
+| DEC-12 | Pitch geometry | 0–100 on both axes mapped onto a 68 × 105 pitch. `orientation` stored per board, default vertical | ADR-02, UX §5 |
+| DEC-13 | Board format vs. team format | Each tactic stores its own `format`. Changing the team format warns and needs explicit conversion for drafts, and never touches snapshots | PRD §6 |
+
+## Open (blocking a later phase)
+
+| ID | Question | Blocks | Options |
+|---|---|---|---|
+| Q-01 | Require email confirmation at sign-up? | Phase 1 | (a) On, with confirmation emails caught by Mailpit locally. (b) Off for a faster demo |
+| Q-02 | Is "Touchline" the final public name, and do you want a logo mark? | Phase 1 UI | n/a |
+| Q-03 | PDF engine (needs approval, as a major dependency) | Phase 6 | (a) `@react-pdf/renderer` drawing the pitch with its SVG primitives: pure JS, Vercel-friendly. (b) Headless Chromium printing the slide page: highest parity, heavy on serverless |
+| Q-04 | Rate limiting `/p/:token` without a paid service | Phase 5 | (a) Postgres counter per IP hash per minute. (b) Vercel's platform firewall rules. (c) In-memory, best effort |
+| Q-05 | Analytics sink (PLAN-004 §5) | Phase 6 | (a) An `analytics_events` table with the allowlisted properties only. (b) Structured server logs only |
+
+## Change log
+
+| Date | Change |
+|---|---|
+| 19 Oct 2026 | Register created at M0 |
