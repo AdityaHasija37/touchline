@@ -42,3 +42,18 @@ export async function dragOnPitch(page: Page, from: { x: number; y: number }, to
 export async function expectSaved(page: Page) {
   await expect(page.getByTestId("save-status")).toContainText("All changes saved", { timeout: 10_000 });
 }
+
+export async function geom(page: Page, name: RegExp) {
+  const el = objectList(page).filter({ hasText: name }).first();
+  return JSON.parse((await el.getAttribute("data-geom"))!) as Record<string, unknown> & { id: string; kind: string };
+}
+
+export const activeTool = (page: Page) => page.locator("[role=toolbar] button[aria-pressed=true]");
+
+/** Pixel position of a pitch point (for clicks on handles etc.). */
+export async function pitchPx(page: Page, p: { x: number; y: number }) {
+  const stage = page.getByTestId("pitch-stage");
+  const box = (await stage.boundingBox())!;
+  const g = JSON.parse((await stage.getAttribute("data-pitch"))!) as { x: number; y: number; vw: number; vh: number };
+  return [box.x + g.x + (p.x / 100) * g.vw, box.y + g.y + (p.y / 100) * g.vh] as const;
+}

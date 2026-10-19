@@ -40,6 +40,12 @@ Status values: **Adopted** (a spec default or an owner decision), **Proposed** (
 | DEC-22 | Linking board markers to players | Server rejects boards that link players outside the tactic's team. Labels default to the shirt number, else initials | Stops a crafted board from referencing other rosters |
 | DEC-23 | Marker colour vs. grass | Team colour is darkened until it reaches 3:1 contrast against the pitch | Grass green was nearly invisible on green |
 | DEC-24 | Board limits | Presets filtered by team format. Max `format` markers per side, one ball, 200 objects, 256 KB JSON | TAC-01 "presets cannot silently introduce 11 players" |
+| DEC-25 | What counts as one undo step | One committed op = one step: a drag records on release, a handle drag on release, a typed field on Enter/blur. Selection, tool changes and renames aren't board history | TAC-04 "undo restores last mutation exactly" |
+| DEC-26 | Undo while typing | Board undo/redo shortcuts are ignored while focus is in a text field, which keeps the browser's own text undo | Avoids surprising board changes mid-typing |
+| DEC-27 | Text placement | Clicking with the Text tool shows a ghost; nothing is added until Enter. Esc cancels and leaves no history entry | UX-002 §5 "Esc cancels; Enter commits" |
+| DEC-28 | Tool persistence and arrow style | Draw tools stay active for repeated drawing (Esc/V returns to select). The drawn item is selected; changing its arrow style also sets the style for the next arrow | Fewer clicks when sketching several runs |
+| DEC-29 | Zoom fit (UX-002 S05 bottom bar) | Not built: the pitch always auto-fits its container, so a fit button would do nothing. Revisit if free zoom/pan is added | Avoids a control with no effect |
+| DEC-30 | Text wrapping | One deterministic word wrap (22 characters per line) shared by the Konva editor and the SVG renderer | Keeps editor, presenter and PDF identical |
 | DEC-13 | Board format vs. team format | Each tactic stores its own `format`. Changing the team format warns and needs explicit conversion for drafts, and never touches snapshots | PRD §6 |
 
 ## Open (blocking a later phase)
@@ -55,5 +61,6 @@ Status values: **Adopted** (a spec default or an owner decision), **Proposed** (
 | Date | Change |
 |---|---|
 | 19 Oct 2026 | Register created at M0 |
+| 19 Oct 2026 | Phase 3: DEC-25 to DEC-30 added |
 | 19 Oct 2026 | Phase 2: DEC-19 to DEC-24 added |
 | 19 Oct 2026 | Q-01, Q-02 resolved (DEC-14/15). DEC-16 to DEC-18 added in Phase 1 |

@@ -59,6 +59,13 @@ const { data: roster } = await admin.from("players").select("id, name, shirt_num
 const slots = [["GK", 50, 92], ["LB", 32, 74], ["RB", 68, 74], ["LM", 18, 52], ["CM", 50, 54], ["RM", 82, 52], ["ST", 50, 28]];
 const objects = slots.map(([, x, y], i) => ({ id: `p-seed${i}`, kind: "player", playerId: roster[i].id, team: "home", label: String(roster[i].shirt_number), x, y }));
 objects.push({ id: "ball-seed", kind: "ball", x: 50, y: 50 });
+objects.push(
+  { id: "zone-seed", kind: "zone", x: 8, y: 8, w: 36, h: 22, color: "#facc15", label: "Press trap" },
+  { id: "arrow-seed1", kind: "arrow", from: { x: 18, y: 52 }, to: { x: 14, y: 22 }, style: "run" },
+  { id: "arrow-seed2", kind: "arrow", from: { x: 50, y: 54 }, to: { x: 20, y: 46 }, style: "pass" },
+  { id: "arrow-seed3", kind: "arrow", from: { x: 50, y: 28 }, to: { x: 32, y: 18 }, style: "dribble" },
+  { id: "text-seed", kind: "text", x: 70, y: 84, text: "Keeper starts every build-up" },
+);
 const { error: tErr } = await admin.from("tactics").insert({
   team_id: team.id,
   name: "2-3-1 base shape",

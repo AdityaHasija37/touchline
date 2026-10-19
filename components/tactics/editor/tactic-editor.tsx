@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { useStore } from "zustand";
-import { AlertTriangle, Circle as BallIcon, MousePointer2, RefreshCw, UserPlus, Users } from "lucide-react";
+import { AlertTriangle, ArrowUpRight, Circle as BallIcon, Eraser, MousePointer2, Redo2, RefreshCw, Slash, Square, Type, Undo2, UserPlus, Users } from "lucide-react";
 import { toast } from "sonner";
 import { BoardSvg } from "@/components/board/board-svg";
 import { LocalTime } from "@/components/app/local-time";
@@ -19,7 +19,7 @@ import { CATEGORY_LABELS, TACTIC_CATEGORIES, type Board, type TacticCategory } f
 import { cn } from "@/lib/utils";
 import { EditorContext } from "./context";
 import { Inspector } from "./inspector";
-import { createEditorStore, type EditorStore } from "./store";
+import { createEditorStore, type EditorStore, type Tool } from "./store";
 import { useSaver } from "./use-saver";
 
 const PitchCanvas = dynamic(() => import("./pitch-canvas"), {
@@ -91,27 +91,49 @@ function EditorWorkspace({ tactic, team, players, store }: EditorProps & { store
   const savedAt = useStore(store, (s) => s.savedAt);
   const opError = useStore(store, (s) => s.opError);
   const dispatch = useStore(store, (s) => s.dispatch);
-  const select = useStore(store, (s) => s.select);
+  const tool = useStore(store, (s) => s.tool);
+  const setTool = useStore(store, (s) => s.setTool);
+  const canUndo = useStore(store, (s) => s.canUndo);
+  const canRedo = useStore(store, (s) => s.canRedo);
   const [copying, setCopying] = useState(false);
 
-  // Ctrl/Cmd+S saves from anywhere in the editor.
+  // Editor-wide shortcuts (UX-002 §5). Text fields keep their own native undo and typing.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") {
+      const mod = e.metaKey || e.ctrlKey;
+      const key = e.key.toLowerCase();
+      if (mod && key === "s") {
         e.preventDefault();
         void save();
+        return;
+      }
+      const t = e.target as HTMLElement | null;
+      if (t && (t.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(t.tagName))) return;
+      const st = store.getState();
+      if (mod && key === "z") {
+        e.preventDefault();
+        if (e.shiftKey) st.redo();
+        else st.undo();
+      } else if (mod && key === "y") {
+        e.preventDefault();
+        st.redo();
+      } else if (!mod && !e.altKey && TOOL_KEYS[key]) {
+        st.setTool(TOOL_KEYS[key]);
+      } else if (key === "escape") {
+        if (st.pendingText) st.placeText(null);
+        else if (st.tool !== "select") st.setTool("select");
+        else st.select(null);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [save]);
+  }, [save, store]);
 
   useEffect(() => {
     if (opError) toast.error(opError);
   }, [opError]);
 
   const onPitchKey = (e: React.KeyboardEvent) => {
-    if (e.key === "Escape") return select(null);
     if (!selectedId) return;
     const step = e.shiftKey ? 5 : 1;
     const moves: Record<string, [number, number]> = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] };
@@ -191,9 +213,11 @@ function EditorWorkspace({ tactic, team, players, store }: EditorProps & { store
 
       <div className="grid h-[calc(100dvh-14rem)] min-h-[34rem] grid-cols-[3.25rem_1fr_18rem] overflow-hidden rounded-2xl border bg-card">
         <div role="toolbar" aria-label="Board tools" aria-orientation="vertical" className="flex flex-col items-center gap-1 border-r p-1.5">
-          <ToolButton label="Select and move" active>
-            <MousePointer2 />
-          </ToolButton>
+          {TOOLS.map(([id, label, key, Icon]) => (
+            <ToolButton key={id} label={`${label} (${key.toUpperCase()})`} active={tool === id} onClick={() => setTool(id)}>
+              <Icon />
+            </ToolButton>
+          ))}
           <div className="my-1 h-px w-full bg-border" />
           <ToolButton label={`Add your player (${home}/${board.format})`} disabled={home >= board.format} onClick={() => dispatch({ type: "add-player", team: "home" })}>
             <UserPlus />
@@ -210,7 +234,7 @@ function EditorWorkspace({ tactic, team, players, store }: EditorProps & { store
           className="relative min-w-0 focus-visible:outline-3 focus-visible:-outline-offset-3 focus-visible:outline-ring"
           tabIndex={0}
           role="application"
-          aria-label="Pitch. Select an item, then use arrow keys to move it (Shift for bigger steps), Delete to remove, Escape to deselect."
+          aria-label={`Pitch, ${TOOLS.find((x) => x[0] === tool)![1].toLowerCase()} tool. Select an item, then use arrow keys to move it (Shift for bigger steps), Delete to remove, Escape to deselect.`}
           aria-describedby="pitch-help"
           onKeyDown={onPitchKey}
         >
@@ -220,13 +244,33 @@ function EditorWorkspace({ tactic, team, players, store }: EditorProps & { store
         <Inspector players={players} />
       </div>
 
-      <p id="pitch-help" className="text-xs text-muted-foreground">
-        Drag to move · Arrow keys nudge the selected item (Shift ×5) · Delete removes · Esc deselects · {navigatorKey()}+S saves. Changes save
-        automatically.
-      </p>
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex gap-1" role="group" aria-label="History">
+          <Button variant="outline" size="sm" disabled={!canUndo} onClick={() => store.getState().undo()} aria-keyshortcuts="Control+Z Meta+Z">
+            <Undo2 aria-hidden /> Undo
+          </Button>
+          <Button variant="outline" size="sm" disabled={!canRedo} onClick={() => store.getState().redo()} aria-keyshortcuts="Control+Shift+Z Meta+Shift+Z">
+            <Redo2 aria-hidden /> Redo
+          </Button>
+        </div>
+        <p id="pitch-help" className="text-xs text-muted-foreground">
+          Drag to move or draw · Arrow keys nudge (Shift ×5) · Delete removes · Esc cancels · {navigatorKey()}+Z undo, Shift+{navigatorKey()}+Z redo ·
+          V A L Z T E switch tools · Changes save automatically.
+        </p>
+      </div>
     </div>
   );
 }
+
+const TOOLS: [Tool, string, string, typeof MousePointer2][] = [
+  ["select", "Select and move", "v", MousePointer2],
+  ["arrow", "Arrow", "a", ArrowUpRight],
+  ["line", "Line", "l", Slash],
+  ["zone", "Zone", "z", Square],
+  ["text", "Text", "t", Type],
+  ["erase", "Erase", "e", Eraser],
+];
+const TOOL_KEYS: Record<string, Tool> = Object.fromEntries(TOOLS.map(([id, , key]) => [key, id]));
 
 function navigatorKey() {
   return typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.userAgent) ? "⌘" : "Ctrl";

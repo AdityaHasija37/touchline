@@ -1,5 +1,6 @@
 import { PITCH_LENGTH_M as L, PITCH_WIDTH_M as W } from "@/lib/domain/pitch";
 import { markerFill } from "@/lib/domain/colors";
+import { wrapText } from "@/lib/domain/text-wrap";
 import { PITCH_MARKINGS, arcPath } from "@/lib/domain/pitch-markings";
 import type { Board, BoardObject } from "@/lib/validation/board";
 import { cn } from "@/lib/utils";
@@ -127,7 +128,11 @@ function BoardObjectSvg({
     case "text":
       return (
         <text x={mx(o.x)} y={my(o.y)} fontSize={2.6} fill="white" fontWeight={600} textAnchor="middle" transform={counter(mx(o.x), my(o.y))}>
-          {o.text}
+          {wrapText(o.text).map((line, i) => (
+            <tspan key={i} x={mx(o.x)} dy={i === 0 ? "0.9em" : "1.15em"}>
+              {line}
+            </tspan>
+          ))}
         </text>
       );
     case "ball":
