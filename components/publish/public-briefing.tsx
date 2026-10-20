@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Download } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { Viewer } from "@/components/slides/viewer";
+import { FindMe } from "./find-me";
 import { buildSlides } from "@/lib/domain/slides";
 import type { Snapshot } from "@/lib/domain/snapshot";
 
@@ -41,18 +42,7 @@ export function PublicBriefing() {
     };
   }, []);
 
-  if (state.kind === "ok") {
-    const s = state.snapshot;
-    return (
-      <Viewer
-        slides={buildSlides(s)}
-        teamColor={s.team.color}
-        matchLabel={`${s.team.name} vs ${s.match.opponent}`}
-        banner={<p className="sr-only">Read-only matchday briefing.</p>}
-        actions={<DownloadPdf />}
-      />
-    );
-  }
+  if (state.kind === "ok") return <Briefing snapshot={state.snapshot} />;
 
   const message = {
     loading: { title: "Loading briefing…", body: "" },
@@ -69,6 +59,42 @@ export function PublicBriefing() {
       </h1>
       {message.body && <p className="max-w-sm text-zinc-400">{message.body}</p>}
     </div>
+  );
+}
+
+function Briefing({ snapshot: s }: { snapshot: Snapshot }) {
+  const [me, setMe] = useState<string | undefined>();
+  const slides = buildSlides(s);
+  const name = [...s.lineup.starters, ...s.lineup.bench].find((p) => p.key === me)?.name;
+  // Snapshots published before player keys existed can't support Find me.
+  const canFind = [...s.lineup.starters, ...s.lineup.bench].some((p) => p.key);
+  return (
+    <Viewer
+      slides={slides}
+      teamColor={s.team.color}
+      format={s.match.format}
+      me={me}
+      matchLabel={`${s.team.name} vs ${s.match.opponent}`}
+      banner={
+        <>
+          <p className="sr-only">Read-only matchday briefing.</p>
+          {name && (
+            <p className="flex items-center justify-center gap-2 bg-yellow-300 px-4 py-1.5 text-sm font-medium text-zinc-900" role="status">
+              Highlighting {name}
+              <button type="button" onClick={() => setMe(undefined)} className="rounded px-1.5 underline underline-offset-2 focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:outline-none">
+                Clear
+              </button>
+            </p>
+          )}
+        </>
+      }
+      actions={
+        <>
+          {canFind && <FindMe snapshot={s} slides={slides} onHighlight={setMe} />}
+          <DownloadPdf />
+        </>
+      }
+    />
   );
 }
 

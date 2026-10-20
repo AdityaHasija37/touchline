@@ -6,7 +6,8 @@ import { createClient } from "@/lib/supabase/server";
 import type { MatchFormat } from "@/lib/domain/format";
 import { formatKickoff } from "@/lib/domain/time";
 import { boardSchema, type Board } from "@/lib/validation/board";
-import { sectionContent, type SectionContent, type SectionType } from "@/lib/validation/match";
+import type { Duty } from "@/lib/domain/roles";
+import { sectionContent, setPiecesSchema, subPlanSchema, type SectionContent, type SectionType, type SetPieces, type SubPlan } from "@/lib/validation/match";
 
 export type MatchSummary = {
   id: string;
@@ -34,15 +35,32 @@ export type PlanSection = {
   tactic: { id: string; name: string; format: MatchFormat; board: Board | null } | null;
 };
 
-export type LineupRow = { playerId: string; role: "starter" | "bench"; slot: number | null; position: string | null };
+export type LineupRow = {
+  playerId: string;
+  role: "starter" | "bench";
+  slot: number | null;
+  position: string | null;
+  playerRole: string | null;
+  duty: Duty | null;
+  instruction: string | null;
+};
 
 export type PlanView = {
   match: MatchSummary;
-  plan: { id: string; objective: string | null; updatedAt: string };
+  plan: {
+    id: string;
+    objective: string | null;
+    updatedAt: string;
+    formationId: string | null;
+    /** Stored JSON is re-validated on read; anything malformed falls back to empty. */
+    setPieces: SetPieces;
+    subPlan: SubPlan | null;
+  };
   lineup: LineupRow[];
   sections: PlanSection[];
 };
 
+const PLAN_COLS = "id, objective, updated_at, formation_id, set_pieces, sub_plan";
 const MATCH_COLS = "id, team_id, opponent_name, kickoff_at, kickoff_tz, venue, match_format, status";
 
 type MatchRow = {
@@ -110,16 +128,16 @@ export const getPlanView = cache(async (matchId: string): Promise<PlanView> => {
   const { data: m } = await supabase.from("matches").select(MATCH_COLS).eq("id", matchId).maybeSingle();
   if (!m) notFound();
 
-  let { data: plan } = await supabase.from("match_plans").select("id, objective, updated_at").eq("match_id", matchId).maybeSingle();
+  let { data: plan } = await supabase.from("match_plans").select(PLAN_COLS).eq("match_id", matchId).maybeSingle();
   if (!plan) {
     // Every fixture has a plan; recreate defensively if an insert was ever interrupted.
-    const { data } = await supabase.from("match_plans").insert({ match_id: matchId }).select("id, objective, updated_at").single();
+    const { data } = await supabase.from("match_plans").insert({ match_id: matchId }).select(PLAN_COLS).single();
     plan = data;
   }
   if (!plan) notFound();
 
   const [{ data: lineup }, { data: sections }] = await Promise.all([
-    supabase.from("lineup_assignments").select("player_id, role, formation_slot, position_label").eq("plan_id", plan.id),
+    supabase.from("lineup_assignments").select("player_id, role, formation_slot, position_label, player_role, duty, instruction").eq("plan_id", plan.id),
     supabase
       .from("plan_sections")
       .select("id, section_type, title, content_json, include_in_briefing, sort_order, tactics(id, name, format, board_json)")
@@ -129,12 +147,22 @@ export const getPlanView = cache(async (matchId: string): Promise<PlanView> => {
 
   return {
     match: toMatch(m as MatchRow, plan.id, (lineup ?? []).filter((l) => l.role === "starter").length),
-    plan: { id: plan.id, objective: plan.objective, updatedAt: plan.updated_at },
+    plan: {
+      id: plan.id,
+      objective: plan.objective,
+      updatedAt: plan.updated_at,
+      formationId: plan.formation_id,
+      setPieces: setPiecesSchema.safeParse(plan.set_pieces).data ?? { marking: [] },
+      subPlan: subPlanSchema.safeParse(plan.sub_plan).data ?? null,
+    },
     lineup: (lineup ?? []).map((l) => ({
       playerId: l.player_id,
       role: l.role as LineupRow["role"],
       slot: l.formation_slot,
       position: l.position_label,
+      playerRole: l.player_role,
+      duty: l.duty as Duty | null,
+      instruction: l.instruction,
     })),
     sections: (sections ?? []).map((s) => {
       const t = s.tactics as unknown as { id: string; name: string; format: number; board_json: unknown } | null;

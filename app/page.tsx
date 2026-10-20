@@ -10,8 +10,8 @@ import { startDemo } from "./demo/actions";
 const STEPS = [
   { icon: Users, title: "Squad", body: "Add your players once. Numbers, positions, and who's available." },
   { icon: LayoutTemplate, title: "Shape", body: "Start from a 5, 7 or 11-a-side formation. Drag players, draw runs, mark zones." },
-  { icon: ClipboardList, title: "Plan", body: "Pick the lineup for Saturday, attach your boards, add notes that only you can see." },
-  { icon: Link2, title: "Briefing", body: "Publish a frozen briefing. Players open a private link on their phones, or you print the PDF." },
+  { icon: ClipboardList, title: "Plan", body: "Put Saturday's lineup on the pitch with roles, set-piece takers and a fair sub plan. Add notes only you can see." },
+  { icon: Link2, title: "Briefing", body: "Publish a frozen briefing. Each player taps Find me to see their own job, or you print the PDF." },
 ];
 
 export default async function Home({ searchParams }: PageProps<"/">) {

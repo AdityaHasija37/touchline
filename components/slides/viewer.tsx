@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Maximize, Minimize } from "lucide-react";
+import type { MatchFormat } from "@/lib/domain/format";
 import type { SlideSpec } from "@/lib/domain/slides";
 import { cn } from "@/lib/utils";
 import { SlideView, slideLabel } from "./slide-view";
@@ -17,7 +18,12 @@ export function Viewer({
   banner,
   exitHref,
   actions,
+  format,
+  me,
 }: {
+  format?: MatchFormat;
+  /** "Find me": highlight this player key on every slide. */
+  me?: string;
   /** Extra header controls, e.g. a PDF download button. */
   actions?: React.ReactNode;
   slides: SlideSpec[];
@@ -105,7 +111,7 @@ export function Viewer({
           aria-label={`Slide ${index + 1} of ${slides.length}: ${slideLabel(slide)}`}
           className="h-full w-full overflow-hidden rounded-lg shadow-2xl md:aspect-video md:h-auto md:w-[min(100cqw,calc(100cqh*16/9))]"
         >
-          <SlideView key={slide.id} slide={slide} teamColor={teamColor} className="motion-safe:animate-in motion-safe:fade-in-0 motion-safe:duration-200" />
+          <SlideView key={slide.id} slide={slide} teamColor={teamColor} format={format} me={me} focusable className="motion-safe:animate-in motion-safe:fade-in-0 motion-safe:duration-200" />
         </section>
         <p className="sr-only" aria-live="polite">
           Slide {index + 1} of {slides.length}: {slideLabel(slide)}

@@ -46,6 +46,10 @@ Build fixture and lineup flows, match-plan sections, complete-lineup publication
 
 Build canonical SlideSpec rendering and PDF export with parity tests and 5v5/7v7/11v11 demos. Run full E2E flow; provide release gap assessment against every P0 ID.
 
+### M5 (1.1)
+
+Build matchday detail from PRD-001 §5.1 (LINE-01, LINE-02, SETP-01, SUBS-01, VIEW-01) as one migration plus vertical slices: roles and duties → set pieces → Find me → squad on the pitch → sub plan. Keep the published snapshot backward compatible, never expose player ids in it, and never let the new features block publishing. Update the demo sandbox so every feature is visible, add unit, pgTAP and E2E coverage, and update the specs, decision register and traceability matrix.
+
 ## 4. Required evidence template
 
 For each milestone provide: Requirement IDs implemented; user-facing behavior; routes/components added; schema migrations; security controls; unit/integration/E2E commands with actual exit status; manual verification steps; screenshots; known limitations; risks; next recommendation. Use “not run” rather than stating or implying a test passed.

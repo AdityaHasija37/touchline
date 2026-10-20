@@ -4,8 +4,10 @@
 
 Strategy, customer problem, scope, functional requirements and release criteria
 
-| Version 0.9 | Status: Proposed | Owner: Product | 17 Oct 2026 |
+| Version 1.1 | Status: MVP shipped; 1.1 in build | Owner: Product | 20 Oct 2026 |
 |---|---|---|---|
+
+Revision history: **0.9** (17 Oct 2026) original proposal. **1.1** (20 Oct 2026) adds matchday detail (LINE-01, LINE-02, SETP-01, SUBS-01, VIEW-01) after a hands-on review of the shipped MVP; see §5.1 and decisions D-06 to D-08. The original 0.9 document is kept as `01_Touchline_PRD.docx`.
 
 Decision status: Proposed specification. Assumptions, targets, and design choices require validation; no user research or shipped capability is claimed.
 
@@ -155,6 +157,40 @@ Editor desktop-first, reader mobile-supported; accessible navigation/labels.
 
 Acceptance: At 375 px, published briefing is readable; keyboard controls have clear focus and non-canvas alternatives for key functions.
 
+## 5.1 Release 1.1 requirements: matchday detail
+
+Why: walking through the live MVP as a captain and as a player showed the plan answered "what shape are we?" but not "what is *my* job?". Positions were free text, the lineup wasn't drawn on a pitch, and nothing covered set-piece takers or who comes off when. Football Manager and EA FC solve this with roles and duties, a pitch-based squad screen, set-piece takers and a substitution plan; these requirements bring the grassroots-sized version of each into the briefing. All are P1: they enrich the plan but never block publishing.
+
+### LINE-01 · Roles, duties and instructions [P1]
+
+Each starter can have an FM-style role (e.g. Full-back, Box-to-box midfielder, Pressing forward), a duty (Defend, Support, Attack) and a one-line personal instruction.
+
+Acceptance: Roles offered are limited to those that suit the starter's line (goalkeeper, defence, midfield, attack); duties are limited to those the role allows; instruction ≤ 140 characters; bench players carry no role; the role and instruction appear next to the player on the lineup slide, phone view and PDF.
+
+### LINE-02 · Squad on the pitch [P1]
+
+The captain can choose a formation for the match and place starters into its slots on a pitch.
+
+Acceptance: Formations match the team format; each slot holds at most one starter; starting a player fills the free slot that best suits their preferred position; choosing a player for an occupied slot swaps or benches the occupant; every slot shows a fit indicator (natural / can cover / out of position) that is also announced as text; out-of-position starters create a non-blocking checklist warning; the lineup slide draws the starters on a pitch when a formation is set. Without a formation, the list-only lineup from MATCH-02 still works.
+
+### SETP-01 · Set-piece takers [P1]
+
+Record the captain, penalty and free-kick takers, left and right corner takers, long throws, and up to 11 marking jobs ("Jo → their #9").
+
+Acceptance: Only current starters can hold a job (server-enforced); jobs held by a player who is later benched are dropped from the briefing rather than shown wrongly; a "Set pieces" slide appears only when at least one job is set.
+
+### SUBS-01 · Sub plan and fair minutes [P1]
+
+Plan substitutions by minute and see planned minutes per player.
+
+Acceptance: Match length defaults by format (40 / 60 / 90) and is editable (10–120); a sub is valid only if the player coming off is on the pitch and the player coming on isn't; invalid subs are explained inline, excluded from the briefing and flagged in the checklist; players under half the match are highlighted and counted in a non-blocking warning; a "Sub plan" slide with minutes bars appears when there is at least one valid sub.
+
+### VIEW-01 · Find me [P1]
+
+On the published briefing a player can pick their name and see only their part of the plan.
+
+Acceptance: The card shows starting position or bench, role and duty, personal instruction, set-piece jobs, marking job, sub minutes, planned minutes and which board slides they appear on; "Highlight me" marks them on every slide (pitch, boards, lists); it works from the published snapshot alone with no extra request; the snapshot identifies players only by per-briefing keys, never by internal ids; briefings published before 1.1 still open (Find me is simply hidden).
+
 ## 6. Key policies and edge cases
 
 - Publish requires a complete starting lineup equal to the selected format; drafts can be incomplete.
@@ -164,6 +200,8 @@ Acceptance: At 375 px, published briefing is readable; keyboard controls have cl
 - Owner can revoke a share link; subsequent token fetches return not found, not private data.
 - Save failures retain unsaved local editor state and show retry; never display success before server acknowledgement.
 - No public player directory; default sharing is private and token-based.
+- (1.1) Set-piece jobs, subs and roles reference players by id only inside the private plan; the published snapshot replaces them with per-briefing keys (p1, p2…).
+- (1.1) Changing the formation keeps starters where possible and re-slots the rest; it never removes a player from the lineup.
 
 ## 7. Dependencies, risks and mitigations
 
@@ -184,6 +222,9 @@ Acceptance: At 375 px, published briefing is readable; keyboard controls have cl
 | D-03 | Can multiple coaches edit? | Not in MVP; one team owner |
 | D-04 | Should tactical animations be MVP? | No; static sequences with separate boards |
 | D-05 | Can plans have arbitrary private notes? | Yes, but explicit public-section inclusion before publish |
+| D-06 | Free-text roles or a fixed list? | Fixed FM-style list (20 roles) plus a free-text instruction: consistent wording for players, flexibility where it matters |
+| D-07 | What counts as "fair minutes"? | At least half the match, as a warning only; teams differ, so the captain decides |
+| D-08 | Should 1.1 features block publishing? | No. Readiness warnings only; the MVP's publish rules are unchanged |
 
 ## 9. Launch gate and references
 

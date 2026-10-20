@@ -7,6 +7,9 @@ Date: 20 Oct 2026. Scope: the MVP defined in PRD-001 v0.9. Written per the build
 
 All 14 P0 requirements and the P1 history requirement are implemented and covered by passing automated tests (14 fully verified, NFR-01 partially). The core loop works end to end without external slide or design software, which is the PRD's own success bar for the MVP. What's missing is mostly evidence about people and real devices, which no amount of local testing can produce, plus a handful of operational prerequisites for hosting other people's data.
 
+## Release 1.1 addendum (20 Oct 2026)
+Five P1 additions (LINE-01, LINE-02, SETP-01, SUBS-01, VIEW-01; PRD-001 §5.1) are implemented and covered by passing unit, pgTAP and E2E tests (see `docs/evidence/PHASE-7.md`). They don't change the MVP's publish rules or this recommendation. What they add is a better answer to "what's *my* job on Saturday?", which is the first thing to test with real captains and players. Two defects found while building them were fixed before release: the draft-vs-published comparison broke on Postgres key ordering (DEC-57), and phone slides that scroll weren't keyboard-reachable (found by axe). New caveat: Find me has no analytics by design (DEC-55), so its use can't be measured yet without asking players.
+
 ## Launch gate (PRD-001 §9)
 | Gate | Status | Notes |
 |---|---|---|

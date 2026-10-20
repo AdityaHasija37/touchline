@@ -18,14 +18,27 @@ import { formatLabel } from "@/lib/domain/format";
 import { planReadiness } from "@/lib/domain/plan-readiness";
 import { toZonedParts } from "@/lib/domain/time";
 import type { LineupEntry, SectionType } from "@/lib/validation/match";
+import { DEFAULT_MATCH_LENGTH } from "@/lib/domain/minutes";
+import { positionFit } from "@/lib/domain/roles";
+import type { SubPlan } from "@/lib/validation/match";
 import { LineupPanel } from "./lineup-panel";
+import { SetPiecesPanel } from "./set-pieces-panel";
+import { SubPlanPanel, subPlanHealth } from "./sub-plan-panel";
 import { MatchForm } from "./match-form";
 import { SectionCard } from "./section-card";
 
 function toEntries(rows: LineupRow[]): LineupEntry[] {
   const starters = rows.filter((r) => r.role === "starter").sort((a, b) => (a.slot ?? 99) - (b.slot ?? 99));
   const bench = rows.filter((r) => r.role === "bench");
-  return [...starters, ...bench].map((r) => ({ playerId: r.playerId, role: r.role, position: r.position ?? undefined }));
+  return [...starters, ...bench].map((r) => ({
+    playerId: r.playerId,
+    role: r.role,
+    slot: r.slot ?? undefined,
+    position: r.position ?? undefined,
+    playerRole: r.playerRole ?? undefined,
+    duty: r.duty ?? undefined,
+    instruction: r.instruction ?? undefined,
+  }));
 }
 
 export function PlanEditor({
@@ -42,12 +55,14 @@ export function PlanEditor({
   const { match, plan, sections } = view;
   const router = useRouter();
   const [lineup, setLineup] = useState(() => toEntries(view.lineup));
+  const [subPlan, setSubPlan] = useState<SubPlan>(() => plan.subPlan ?? { matchLength: DEFAULT_MATCH_LENGTH[match.format], subs: [] });
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [picking, setPicking] = useState(false);
   const [pending, startTransition] = useTransition();
 
   const byId = new Map(players.map((p) => [p.id, p]));
+  const subHealth = subPlanHealth(lineup, subPlan);
   const readiness = planReadiness({
     format: match.format,
     starters: lineup.filter((e) => e.role === "starter").map((e) => ({ archived: Boolean(byId.get(e.playerId)?.archivedAt) })),
@@ -59,6 +74,11 @@ export function PlanEditor({
       tacticFormat: s.tactic?.format ?? null,
     })),
     objective: plan.objective,
+    outOfPosition: plan.formationId
+      ? lineup.filter((e) => e.role === "starter" && positionFit(byId.get(e.playerId)?.preferredPositions ?? [], e.position) === "out").length
+      : 0,
+    subProblems: subHealth.problemCount,
+    shortMinutes: subPlan.subs.length ? subHealth.short.length : 0,
   });
   const blocking = readiness.items.filter((i) => i.level === "blocking");
 
@@ -111,11 +131,13 @@ export function PlanEditor({
 
       <div className="grid gap-6 lg:grid-cols-[19rem_minmax(0,1fr)_17rem]">
         <div className="min-w-0">
-          <LineupPanel planId={plan.id} format={match.format} players={players} initial={lineup} onChange={setLineup} />
+          <LineupPanel planId={plan.id} format={match.format} players={players} initial={lineup} initialFormationId={plan.formationId} onChange={setLineup} />
         </div>
 
         <div className="grid min-w-0 content-start gap-4">
           <Objective planId={plan.id} initial={plan.objective ?? ""} />
+          <SetPiecesPanel planId={plan.id} initial={plan.setPieces} lineup={lineup} players={players} />
+          <SubPlanPanel planId={plan.id} format={match.format} initial={plan.subPlan} lineup={lineup} players={players} onChange={setSubPlan} />
           <div className="flex items-center justify-between gap-2">
             <h2 className="font-semibold">Briefing sections</h2>
             <span className="text-sm text-muted-foreground">Shown to players in this order</span>

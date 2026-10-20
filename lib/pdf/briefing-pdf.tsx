@@ -3,7 +3,10 @@ import path from "node:path";
 import { Circle, Document, Font, Line, Page, Path, Rect, StyleSheet, Svg, Text, View, renderToBuffer } from "@react-pdf/renderer";
 import { renderBoard, type Prim } from "@/lib/domain/board-render";
 import { buildSlides, type SlideSpec } from "@/lib/domain/slides";
+import type { MatchFormat } from "@/lib/domain/format";
+import { lineupBoard } from "@/lib/domain/lineup-board";
 import type { Snapshot } from "@/lib/domain/snapshot";
+import type { Board } from "@/lib/validation/board";
 
 /**
  * Printable briefing (EXP-01). Consumes the published snapshot through the same SlideSpec and
@@ -45,7 +48,7 @@ export function BriefingPdf({ snapshot }: { snapshot: Snapshot }) {
     <Document title={`${snapshot.team.name} vs ${snapshot.match.opponent}`} author="Touchline" creator="Touchline" producer="Touchline">
       {slides.map((slide, i) => (
         <Page key={slide.id} size={[PAGE.width, PAGE.height]} style={s.page}>
-          <SlidePage slide={slide} teamColor={color} />
+          <SlidePage slide={slide} teamColor={color} format={snapshot.match.format} />
           <View style={s.footer} fixed>
             <Text>
               {snapshot.team.name} vs {snapshot.match.opponent} · {snapshot.match.kickoffLabel}
@@ -60,7 +63,7 @@ export function BriefingPdf({ snapshot }: { snapshot: Snapshot }) {
   );
 }
 
-function SlidePage({ slide, teamColor }: { slide: SlideSpec; teamColor: string }) {
+function SlidePage({ slide, teamColor, format }: { slide: SlideSpec; teamColor: string; format: MatchFormat }) {
   switch (slide.kind) {
     case "title":
       return (
@@ -82,19 +85,32 @@ function SlidePage({ slide, teamColor }: { slide: SlideSpec; teamColor: string }
           )}
         </View>
       );
-    case "lineup":
+    case "lineup": {
+      const pitch = lineupBoard(slide.starters, format);
       return (
         <View>
+          {slide.formation && <Text style={s.eyebrow}>{slide.formation}</Text>}
           <Text style={s.h2}>{slide.title}</Text>
           <View style={{ flexDirection: "row" }}>
-            <View style={{ flex: 2, flexDirection: "row", flexWrap: "wrap" }}>
+            {pitch && (
+              <View style={{ width: 250, marginRight: 24 }}>
+                <BoardPdf board={pitch.board} captions={pitch.captions} teamColor={teamColor} width={250} />
+              </View>
+            )}
+            <View style={{ flex: 2, flexDirection: pitch ? "column" : "row", flexWrap: pitch ? "nowrap" : "wrap" }}>
               {slide.starters.map((p, i) => (
-                <View key={i} style={{ width: "50%", flexDirection: "row", alignItems: "center", paddingVertical: 6, paddingRight: 16, borderBottomWidth: 0.5, borderBottomColor: "#d4d4d8" }}>
-                  <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: teamColor, justifyContent: "center", alignItems: "center", marginRight: 10 }}>
-                    <Text style={{ color: "#ffffff", fontSize: 13, fontWeight: 700 }}>{p.number ?? "-"}</Text>
+                <View
+                  key={i}
+                  style={{ width: pitch ? "100%" : "50%", flexDirection: "row", alignItems: "center", paddingVertical: pitch ? 3 : 6, paddingRight: 16, borderBottomWidth: 0.5, borderBottomColor: "#d4d4d8" }}
+                >
+                  <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: teamColor, justifyContent: "center", alignItems: "center", marginRight: 10 }}>
+                    <Text style={{ color: "#ffffff", fontSize: 11, fontWeight: 700 }}>{p.number ?? "-"}</Text>
                   </View>
-                  <Text style={{ flex: 1, fontSize: 16, fontWeight: 700 }}>{p.name}</Text>
-                  {p.position && <Text style={{ fontSize: 12, color: MUTED, fontWeight: 700 }}>{p.position}</Text>}
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: pitch ? 13 : 16, fontWeight: 700 }}>{p.name}</Text>
+                    {(p.role || p.instruction) && <Text style={{ fontSize: 9, color: MUTED }}>{[p.role, p.instruction].filter(Boolean).join(" · ")}</Text>}
+                  </View>
+                  {p.position && <Text style={{ fontSize: 11, color: MUTED, fontWeight: 700, marginLeft: 8 }}>{p.position}</Text>}
                 </View>
               ))}
             </View>
@@ -102,12 +118,72 @@ function SlidePage({ slide, teamColor }: { slide: SlideSpec; teamColor: string }
               <View style={{ flex: 1, paddingLeft: 24 }}>
                 <Text style={{ ...s.eyebrow, color: MUTED }}>Bench</Text>
                 {slide.bench.map((p, i) => (
-                  <Text key={i} style={{ fontSize: 14, marginBottom: 4 }}>
+                  <Text key={i} style={{ fontSize: 13, marginBottom: 4 }}>
                     {p.number ?? "-"}  {p.name}
                   </Text>
                 ))}
               </View>
             )}
+          </View>
+        </View>
+      );
+    }
+    case "setpieces":
+      return (
+        <View>
+          <Text style={s.h2}>{slide.title}</Text>
+          <View style={{ flexDirection: "row" }}>
+            <View style={{ flex: 1, paddingRight: 24 }}>
+              {slide.jobs.map((j) => (
+                <View key={j.job} style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 6, borderBottomWidth: 0.5, borderBottomColor: "#d4d4d8" }}>
+                  <Text style={{ fontSize: 14, color: MUTED, fontWeight: 700 }}>{j.label}</Text>
+                  <Text style={{ fontSize: 16, fontWeight: 700 }}>{j.name}</Text>
+                </View>
+              ))}
+            </View>
+            {slide.marking.length > 0 && (
+              <View style={{ flex: 1 }}>
+                <Text style={{ ...s.eyebrow, color: MUTED }}>Marking</Text>
+                {slide.marking.map((m, i) => (
+                  <Text key={i} style={{ fontSize: 15, marginBottom: 6 }}>
+                    {m.name}  →  {m.target}
+                  </Text>
+                ))}
+              </View>
+            )}
+          </View>
+        </View>
+      );
+    case "subs":
+      return (
+        <View>
+          <Text style={s.eyebrow}>{slide.matchLength} minutes</Text>
+          <Text style={s.h2}>{slide.title}</Text>
+          <View style={{ flexDirection: "row" }}>
+            <View style={{ flex: 1, paddingRight: 24 }}>
+              {slide.subs.map((x, i) => (
+                <View key={i} style={{ flexDirection: "row", paddingVertical: 6, borderBottomWidth: 0.5, borderBottomColor: "#d4d4d8" }}>
+                  <Text style={{ width: 44, fontSize: 15, fontWeight: 700 }}>{x.minute}&apos;</Text>
+                  <Text style={{ flex: 1, fontSize: 14 }}>
+                    On {x.inName} · off {x.outName}
+                  </Text>
+                </View>
+              ))}
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ ...s.eyebrow, color: MUTED }}>Planned minutes</Text>
+              {slide.minutes.map((m) => (
+                <View key={m.key} style={{ marginBottom: 5 }}>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                    <Text style={{ fontSize: 11 }}>{m.name}</Text>
+                    <Text style={{ fontSize: 11 }}>{m.minutes}&apos;</Text>
+                  </View>
+                  <View style={{ height: 4, backgroundColor: "#f4f4f5", borderRadius: 2 }}>
+                    <View style={{ height: 4, width: `${(m.minutes / slide.matchLength) * 100}%`, backgroundColor: m.short ? "#f59e0b" : "#059669", borderRadius: 2 }} />
+                  </View>
+                </View>
+              ))}
+            </View>
           </View>
         </View>
       );
@@ -152,8 +228,8 @@ function SlidePage({ slide, teamColor }: { slide: SlideSpec; teamColor: string }
 }
 
 /** Same primitives as the screen SVG, drawn with react-pdf's SVG elements. */
-function BoardPdf({ board, teamColor, width }: { board: NonNullable<Extract<SlideSpec, { kind: "board" }>["board"]>; teamColor: string; width: number }) {
-  const r = renderBoard(board, teamColor);
+function BoardPdf({ board, teamColor, width, captions }: { board: Board; teamColor: string; width: number; captions?: Record<string, string> }) {
+  const r = renderBoard(board, teamColor, { captions });
   const height = (width * r.height) / r.width;
   return (
     <Svg width={width} height={height} viewBox={`0 0 ${r.width} ${r.height}`}>

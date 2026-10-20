@@ -28,7 +28,7 @@ export default function PrivacyPage() {
           <h2>Who can see it</h2>
           <ul>
             <li>Everything in your account is private to you. Other users can&apos;t see or change it.</li>
-            <li>A published briefing can be opened by anyone who has its link. It shows only the sections you included, the lineup and the match details. It never shows private notes, your full squad list or your account details.</li>
+            <li>A published briefing can be opened by anyone who has its link. It shows only the sections you included, the lineup (with any roles and instructions you add), set-piece jobs, the sub plan and the match details. It never shows private notes, your full squad list or your account details.</li>
             <li>You can revoke a link at any time. After that it shows &ldquo;briefing unavailable&rdquo;.</li>
             <li>Share links are never stored in readable form. We keep only a one-way fingerprint of each link.</li>
           </ul>

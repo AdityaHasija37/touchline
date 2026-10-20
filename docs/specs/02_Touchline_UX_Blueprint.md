@@ -4,8 +4,10 @@
 
 Information architecture, primary journeys, interaction states, content rules and handoff
 
-| Version 0.9 | Status: Proposed | Owner: Product | 17 Oct 2026 |
+| Version 1.1 | Status: MVP shipped; 1.1 in build | Owner: Product | 20 Oct 2026 |
 |---|---|---|---|
+
+Revision history: **0.9** (17 Oct 2026) original. **1.1** (20 Oct 2026) adds the pitch builder, roles, set pieces and sub plan to S07, Find me to S09/S10, journey J05, and new microcopy (PRD-001 §5.1).
 
 Decision status: Proposed specification. Assumptions, targets, and design choices require validation; no user research or shipped capability is claimed.
 
@@ -62,6 +64,12 @@ Duplicate prior tactic or plan → edit copy → save under new name → use for
 
 Exception / recovery: Edits to a copy never mutate the original or previously published briefings.
 
+### J05 Player finds their job (1.1)
+
+Open shared link on a phone → tap **Find me** → choose own name → read personal card (position, role and duty, instruction, set pieces, sub minutes, boards) → **Highlight me** → swipe through slides with own marker and rows highlighted → **Clear**
+
+Exception / recovery: A briefing published before 1.1 has no player keys, so Find me is hidden and the slides work as before. A player not in the match squad isn't listed.
+
 ## 5. Tactics canvas interaction specification
 
 | Mode | Input | Result / state feedback |
@@ -85,13 +93,23 @@ Top header: breadcrumb, tactic name, unsaved indicator, Save. Left toolbar: move
 
 Left: fixture details and lineup/bench selection. Center: ordered sections and attached tactics. Right: privacy controls, validation checklist, Preview/Publish CTA.
 
+1.1 additions:
+- **Lineup (left).** A *Formation* select ("None (list only)" keeps the MVP list). With a formation, a pitch shows one button per slot: shirt number and surname, ringed by fit (green natural, amber can cover, red out of position; the fit is also in the button's accessible name). Selecting a slot opens a player picker for it, listing starters, bench and squad with their fit; choosing an occupied player swaps them. Under each starter: *Role* and *Duty* selects (filtered to the slot's line) and a *Personal instruction* field. The list view and its Start / Bench / Move to bench buttons remain the keyboard-first path.
+- **Set pieces (center, under the objective).** A select per job (Captain, Penalties, Free kicks, Corners left/right, Long throws) listing only starters, and a *Marking* list with player + "Marks…" text and Add / Remove.
+- **Sub plan & minutes (center).** Match length, rows of minute + Off + On, inline problem text per invalid row, and a *Planned minutes* bar per player (amber under half the match, with the same fact in text).
+- **Checklist (right).** Non-blocking warnings for out-of-position starters, subs that don't work, and players under half the match.
+
 ### S09 · Matchday Viewer
 
 Dark chrome and high-contrast slide canvas. Upper-left match label; slide number top-right; contextual navigation bottom; no editing controls. Keyboard and touch navigation.
 
+1.1 slide order: Title → Starting lineup (on a pitch, with roles and instructions, when a formation is set) → Set pieces (if any) → Sub plan (if any) → sections in stored order.
+
 ### S10 · Public Share
 
 Header with match title, slide deck, read-only notice; no private navigation; no team management entry points; generic unavailable page for bad tokens.
+
+1.1: a **Find me** button in the header opens a dialog (name select → personal card → *Highlight me in the briefing*). While highlighting, a yellow status bar reads "Highlighting {name}" with *Clear*; the player's marker gets a yellow ring on the pitch and on boards, and their rows are tinted on lineup, set-piece and sub slides.
 
 ## 7. Feedback states and accessibility
 
@@ -116,6 +134,10 @@ Header with match title, slide deck, read-only notice; no private navigation; no
 | Save failed | Changes haven’t synced. Your edits are still here. Retry save. |
 | Blocked publish | Add all 7 starters before publishing this 7v7 match plan. |
 | Share warning | Anyone with this link can view the published briefing. You can revoke access at any time. |
+| Out of position (1.1) | 2 starters are out of position. |
+| Broken sub (1.1) | The player coming off isn't on the pitch at that point. |
+| Unfair minutes (1.1) | 1 player gets under half the match. |
+| Find me (1.1) | Pick your name to see your job in this plan. |
 
 ## 9. Usability study protocol
 

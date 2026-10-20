@@ -93,6 +93,9 @@ All coordinates are clamped to [0, 100] in pitch space (x left→right, y top→
 | 0002 | tactics (board_json jsonb, version, CHECK schemaVersion) | 2 |
 | 0003 | matches, match_plans, lineup_assignments, plan_sections | 4 |
 | 0004 | published_plans, audit_events, `publish_plan()` / `revoke_plan()` / `get_published_snapshot()` | 5 |
+| 0009 (`20261021000000_roles_setpieces_subs`) | Release 1.1: role/duty/instruction on lineup rows, formation + set pieces + sub plan on match plans, `save_lineup` v2, analytics allowlist for adoption counts | 7 (1.1) |
+
+As built, phases 0–6 used eight migrations (see `supabase/migrations/`); the table above keeps the original M0 plan plus the 1.1 addition.
 
 Each migration ships with pgTAP tests in `supabase/tests/` that cover the allow and deny paths for anon, the owner and another user.
 

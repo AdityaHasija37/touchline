@@ -27,7 +27,21 @@ test("one click from the landing page into a ready sandbox; publish and view as 
   const url = await publish(page);
   const { ctx: pctx, page: player } = await openAsPlayer(browser, url, { width: 375, height: 812 });
   await expect(player.getByRole("heading", { name: "vs Riverside Dynamos" })).toBeVisible();
-  await player.getByLabel("Jump to slide").selectOption({ label: "3. Our press" });
+  // 1.1 slides from the seeded formation, set pieces and sub plan come before the sections.
+  await player.getByLabel("Jump to slide").selectOption({ label: "2. Starting lineup" });
+  await expect(player.getByRole("img", { name: "2-3-1 on the pitch" })).toBeVisible();
+  await expect(player.getByTestId("viewer")).toContainText("Pressing forward (Attack)");
+  await player.getByLabel("Jump to slide").selectOption({ label: "3. Set pieces" });
+  await expect(player.getByTestId("viewer")).toContainText("Jo Lindqvist → Their #9");
+  await player.getByLabel("Jump to slide").selectOption({ label: "4. Sub plan" });
+  await expect(player.getByTestId("viewer")).toContainText("On Toni Walsh · off Lee Novak");
+  await player.getByLabel("Jump to slide").selectOption({ label: "5. Our press" });
+  for (const label of ["2. Starting lineup", "3. Set pieces", "4. Sub plan"]) {
+    await player.getByLabel("Jump to slide").selectOption({ label });
+    expect(await player.evaluate(() => document.documentElement.scrollWidth - window.innerWidth), label).toBeLessThanOrEqual(0);
+    expect(await player.locator("[aria-roledescription=slide] .\\@container").evaluate((el) => el.scrollWidth - el.clientWidth), label).toBeLessThanOrEqual(0);
+  }
+  await player.getByLabel("Jump to slide").selectOption({ label: "5. Our press" });
   await expect(player.getByTestId("viewer")).toContainText("Show them inside");
   await expect(player.getByTestId("viewer")).not.toContainText("Players never see this");
   await pctx.close();

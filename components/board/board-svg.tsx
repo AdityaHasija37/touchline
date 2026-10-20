@@ -1,4 +1,4 @@
-import { renderBoard, type Prim } from "@/lib/domain/board-render";
+import { renderBoard, type Prim, type RenderOpts } from "@/lib/domain/board-render";
 import type { Board } from "@/lib/validation/board";
 import { cn } from "@/lib/utils";
 
@@ -15,7 +15,9 @@ export function BoardSvg({
   className,
   showLabels = true,
   decorative = false,
-}: {
+  captions,
+  highlight,
+}: Pick<RenderOpts, "captions" | "highlight"> & {
   /** Hide from assistive tech when a surrounding control already names it. */
   decorative?: boolean;
   board: Board;
@@ -24,7 +26,7 @@ export function BoardSvg({
   className?: string;
   showLabels?: boolean;
 }) {
-  const { width, height, prims } = renderBoard(board, teamColor, { showLabels });
+  const { width, height, prims } = renderBoard(board, teamColor, { showLabels, captions, highlight });
   return (
     <svg
       viewBox={`0 0 ${width} ${height}`}

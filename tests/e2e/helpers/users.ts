@@ -58,7 +58,7 @@ export async function createTeam(page: Page, name: string, format: "5v5" | "7v7"
 }
 
 /** Test-only: seed squad players straight into the local DB. */
-export async function addPlayers(teamId: string, players: { name: string; shirt_number?: number }[]) {
+export async function addPlayers(teamId: string, players: { name: string; shirt_number?: number; preferred_positions?: string[] }[]) {
   const { error } = await admin().from("players").insert(players.map((p) => ({ team_id: teamId, ...p })));
   if (error) throw error;
 }

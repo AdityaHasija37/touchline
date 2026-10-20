@@ -26,10 +26,22 @@ That's a hypothesis, not a finding. I haven't run user interviews or a pilot yet
 | **3. Plan.** Pick Saturday's lineup, attach tactics, write notes for players *and* private notes only you see. It won't let you publish an incomplete lineup. | **4. Briefing.** Publish a frozen briefing behind a private link. Players need no app and no account. You can present it full screen, print a PDF, or switch the link off. |
 | ![Publish screen](docs/images/publish.jpg) | ![Player view on a phone](docs/images/phone.jpg) |
 
+## New in 1.1: every player knows their job
+After shipping the MVP I used it end to end, as a captain and then as a player on a phone. It told the team its *shape*, but not each person their *job*. So I borrowed five ideas from Football Manager and EA FC and cut them down to grassroots size:
+
+| | |
+|---|---|
+| **Squad on the pitch.** Pick a formation and your starters land on a pitch in the slot that suits them. Each slot shows whether they're a natural fit, can cover, or are out of position (in colour *and* words). | **Roles and duties.** Give each starter an FM-style role and duty ("Inverted winger, Attack") plus a one-line personal instruction. |
+| ![Pitch builder with roles](docs/images/v11-02-lineup-pitch-roles.jpg) | ![Lineup slide on a pitch](docs/images/v11-06-slide-starting-lineup.jpg) |
+| **Set pieces and a fair sub plan.** Choose who takes what and who marks whom. Plan subs by minute and see everyone's planned minutes, with a nudge when someone gets less than half a game. | **Find me.** On the shared link, a player picks their name and gets just their part: position, role, instruction, set pieces, sub times, minutes. Then they can highlight themselves on every slide. |
+| ![Sub plan slide](docs/images/v11-08-slide-sub-plan.jpg) | ![Find me on a phone](docs/images/v11-09-find-me-card.jpg) |
+
+None of it can block publishing. A captain in a hurry still gets a briefing out; the extra detail is there when they want it. The [PRD §5.1](docs/specs/01_Touchline_PRD.md#51-release-11-requirements-matchday-detail) and the [case study](docs/product/CASE-STUDY.md#iteration-11-from-shape-to-job) explain the reasoning.
+
 ## Try it in two minutes
 1. Open the [live demo](https://touchline-olive-six.vercel.app) and click **Try the demo**.
-2. Follow the tour card: squad → tactics board (drag a player, draw a run, press ⌘Z) → Saturday's match plan.
-3. Hit **Preview & publish**, then open the player link on your phone.
+2. Follow the tour card: squad → tactics board (drag a player, draw a run, press ⌘Z) → Saturday's match plan, where the lineup is already on a pitch with roles, set pieces and a sub plan.
+3. Hit **Preview & publish**, then open the player link on your phone and tap **Find me**.
 4. Notice what's *not* there: the private note on the first section, and the squad members who weren't picked.
 
 ## Product docs
@@ -42,7 +54,7 @@ The specs came first, and the build was checked against them. Every decision tha
 | [UX blueprint](docs/specs/02_Touchline_UX_Blueprint.md) | Screens, journeys, interaction states, microcopy |
 | [Technical spec](docs/specs/03_Touchline_Technical_Spec.md) | Architecture, data model, security model, test strategy |
 | [Delivery & QA plan](docs/specs/04_Touchline_Delivery_QA_Plan.md) | Phasing, backlog, QA matrix, analytics plan |
-| [Decision register](docs/DECISIONS.md) | 48 product and engineering decisions, each with the reason |
+| [Decision register](docs/DECISIONS.md) | 58 product and engineering decisions, each with the reason |
 | [Traceability matrix](docs/TRACEABILITY.md) | Every requirement → code → the tests that prove it |
 | [Release assessment](docs/RELEASE-ASSESSMENT.md) | A candid "is it ready?" against the PRD's own launch gate |
 | [Build evidence](docs/evidence/) | Per-phase notes: what was built, tests run, bugs found, screenshots |
@@ -55,9 +67,9 @@ I worked as the product owner, with an AI coding agent (Claude Code) as the engi
 **A few things I cared about:**
 - **Privacy by default.** Every table is locked to its owner in the database itself (row-level security), and that's tested with "can user B see user A's data?" checks on every table. Share links are stored only as one-way fingerprints, and they sit in the URL fragment so they never show up in server logs.
 - **What players see can't drift.** Publishing freezes a snapshot. The presenter, the phone view and the PDF all render from that one snapshot, so editing a tactic later doesn't silently change a briefing players already have.
-- **Accessible.** Keyboard alternatives for everything on the canvas, and an automated WCAG 2.2 AA check on 13 screens.
+- **Accessible.** Keyboard alternatives for everything on the canvas and the pitch builder, and an automated WCAG 2.2 AA check on 18 screens and states.
 
-**Quality at the time of writing:** 90 unit tests, 119 database assertions and 50 end-to-end browser tests. They cover every P0 requirement in the PRD ([details](docs/TRACEABILITY.md)).
+**Quality at the time of writing:** 120 unit tests, 133 database assertions and 52 end-to-end browser tests. They cover every P0 requirement in the PRD and the five 1.1 additions ([details](docs/TRACEABILITY.md)).
 
 ## Status and honest caveats
 - An MVP built as a portfolio project, deployed on Vercel + Supabase. Not yet tested with real captains or on real phones.

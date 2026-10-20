@@ -7,6 +7,8 @@ import { createClient } from "@/lib/supabase/server";
 import { siteUrl } from "@/lib/supabase/env";
 import { loadPlanForPublishing } from "@/lib/db/publications";
 import { buildSlides } from "@/lib/domain/slides";
+import type { Snapshot } from "@/lib/domain/snapshot";
+import { SET_PIECE_JOBS } from "@/lib/validation/match";
 import { generateShareToken, hashShareToken, shareUrl } from "@/lib/share/token";
 import { track } from "@/lib/analytics/track";
 
@@ -27,6 +29,18 @@ async function audit(teamId: string, action: "plan_published" | "plan_republishe
 function refresh(planId: string, matchId: string) {
   revalidatePath(`/app/plans/${planId}/publish`);
   revalidatePath(`/app/matches/${matchId}/plan`);
+}
+
+/** Counts only: never names, roles text or instructions (PLAN-004 §5). */
+function publishProps(s: Snapshot, slideCount: number) {
+  return {
+    slide_count: slideCount,
+    format: s.match.format,
+    has_formation: s.lineup.formation ? (1 as const) : (0 as const),
+    roles_count: s.lineup.starters.filter((p) => p.role).length,
+    set_piece_jobs: s.setPieces ? SET_PIECE_JOBS.filter((j) => s.setPieces![j]).length + s.setPieces.marking.length : 0,
+    subs_count: s.subPlan?.subs.length ?? 0,
+  };
 }
 
 /**
@@ -52,7 +66,7 @@ export async function publishPlan(planId: string): Promise<PublishResult> {
       .is("revoked_at", null);
     if (error) return { status: "error", message: "Couldn't republish. Your draft is unchanged; try again." };
     await audit(view.match.teamId, "plan_republished", publication.id);
-    await track("plan_published", view.match.teamId, { slide_count: slideCount, format: view.match.format });
+    await track("plan_published", view.match.teamId, publishProps(snapshot, slideCount));
     refresh(planId, view.match.id);
     return { status: "republished" };
   }
@@ -65,7 +79,7 @@ export async function publishPlan(planId: string): Promise<PublishResult> {
     .single();
   if (error) return { status: "error", message: "Couldn't publish. Your draft is unchanged; try again." };
   await audit(view.match.teamId, "plan_published", data.id);
-  await track("plan_published", view.match.teamId, { slide_count: slideCount, format: view.match.format });
+  await track("plan_published", view.match.teamId, publishProps(snapshot, slideCount));
   refresh(planId, view.match.id);
   return { status: "published", url: shareUrl(siteUrl(), token) };
 }

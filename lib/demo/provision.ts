@@ -91,11 +91,59 @@ export async function provisionDemo(ip: string): Promise<{ status: "ok"; email: 
       })
       .select("id")
       .single();
-    const { data: plan } = await db.from("match_plans").insert({ match_id: match!.id, objective: "Win the second balls in midfield" }).select("id").single();
-    const positions = ["GK", "LB", "RB", "LM", "CM", "ST", "RM"];
+    const id = (n: string) => byName.get(n)!.id;
+    const { data: plan } = await db
+      .from("match_plans")
+      .insert({
+        match_id: match!.id,
+        objective: "Win the second balls in midfield",
+        formation_id: "7-231",
+        // Enhancement 4: takers and marking jobs.
+        set_pieces: {
+          captain: id("Max Adeyemi"),
+          penalties: id("Kai Brennan"),
+          freeKicks: id("Kai Brennan"),
+          cornersLeft: id("Riley Chen"),
+          cornersRight: id("Lee Novak"),
+          marking: [
+            { playerId: id("Jo Lindqvist"), target: "Their #9" },
+            { playerId: id("Alex Moreno"), target: "Near post" },
+          ],
+        },
+        // Enhancement 5: rolling subs so everyone plays at least half of 60 minutes.
+        sub_plan: {
+          matchLength: 60,
+          subs: [
+            { minute: 20, outId: id("Lee Novak"), inId: id("Toni Walsh") },
+            { minute: 30, outId: id("Riley Chen"), inId: id("Dani Ruiz") },
+            { minute: 40, outId: id("Kai Brennan"), inId: id("Lee Novak") },
+          ],
+        },
+      })
+      .select("id")
+      .single();
+    // Matches the 2-3-1 slots (GK, LB, RB, LM, CM, RM, ST). Lee, a forward, on the right shows an amber "can cover" fit.
+    const roles: [position: string, role: string, duty: string, instruction: string | null][] = [
+      ["GK", "sweeper_keeper", "support", "Play short to the full-backs"],
+      ["LB", "full_back", "support", null],
+      ["RB", "full_back", "defend", "Stay home when Lee goes forward"],
+      ["LM", "wide_midfielder", "support", null],
+      ["CM", "box_to_box", "support", "Win the second ball, then play forward quickly"],
+      ["RM", "inverted_winger", "attack", null],
+      ["ST", "pressing_forward", "attack", "First defender: press their centre-backs"],
+    ];
     await db.from("lineup_assignments").insert([
-      ...order.map((n, i) => ({ plan_id: plan!.id, player_id: byName.get(n)!.id, role: "starter", formation_slot: i + 1, position_label: positions[i] })),
-      ...["Dani Ruiz", "Toni Walsh"].map((n) => ({ plan_id: plan!.id, player_id: byName.get(n)!.id, role: "bench" })),
+      ...order.map((n, i) => ({
+        plan_id: plan!.id,
+        player_id: id(n),
+        role: "starter",
+        formation_slot: i + 1,
+        position_label: roles[i][0],
+        player_role: roles[i][1],
+        duty: roles[i][2],
+        instruction: roles[i][3],
+      })),
+      ...["Dani Ruiz", "Toni Walsh"].map((n) => ({ plan_id: plan!.id, player_id: id(n), role: "bench" })),
     ]);
     await db.from("plan_sections").insert([
       {
@@ -109,9 +157,9 @@ export async function provisionDemo(ip: string): Promise<{ status: "ok"; email: 
       {
         plan_id: plan!.id,
         section_type: "notes",
-        title: "Set pieces",
+        title: "Attacking corners",
         sort_order: 1,
-        content_json: { phase: "set_pieces", notes: "Near-post run from 4 on every corner. Kai takes free kicks inside 25 yards.", privateNotes: "" },
+        content_json: { phase: "set_pieces", notes: "Near-post run from 4 on every corner. Everyone else attacks the back post.", privateNotes: "" },
       },
       {
         plan_id: plan!.id,

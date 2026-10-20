@@ -87,14 +87,14 @@ isOneToOne: false
                   ]
                 },"lineup_assignments": {
                   Row: {
-                    "formation_slot": number | null,"plan_id": string,"player_id": string,"position_label": string | null,"role": string
+                    "duty": string | null,"formation_slot": number | null,"instruction": string | null,"plan_id": string,"player_id": string,"player_role": string | null,"position_label": string | null,"role": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "formation_slot"?: number | null,"plan_id": string,"player_id": string,"position_label"?: string | null,"role": string
+                    "duty"?: string | null,"formation_slot"?: number | null,"instruction"?: string | null,"plan_id": string,"player_id": string,"player_role"?: string | null,"position_label"?: string | null,"role": string
                   }
                   Update: {
-                    "formation_slot"?: number | null,"plan_id"?: string,"player_id"?: string,"position_label"?: string | null,"role"?: string
+                    "duty"?: string | null,"formation_slot"?: number | null,"instruction"?: string | null,"plan_id"?: string,"player_id"?: string,"player_role"?: string | null,"position_label"?: string | null,"role"?: string
                   }
                   Relationships: [
                     {
@@ -113,14 +113,14 @@ isOneToOne: false
                   ]
                 },"match_plans": {
                   Row: {
-                    "draft_status": string,"id": string,"match_id": string,"objective": string | null,"updated_at": string,"version": number
+                    "draft_status": string,"formation_id": string | null,"id": string,"match_id": string,"objective": string | null,"set_pieces": NonNullable<Json>,"sub_plan": NonNullable<Json>,"updated_at": string,"version": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "draft_status"?: string,"id"?: string,"match_id": string,"objective"?: string | null,"updated_at"?: string,"version"?: number
+                    "draft_status"?: string,"formation_id"?: string | null,"id"?: string,"match_id": string,"objective"?: string | null,"set_pieces"?: NonNullable<Json>,"sub_plan"?: NonNullable<Json>,"updated_at"?: string,"version"?: number
                   }
                   Update: {
-                    "draft_status"?: string,"id"?: string,"match_id"?: string,"objective"?: string | null,"updated_at"?: string,"version"?: number
+                    "draft_status"?: string,"formation_id"?: string | null,"id"?: string,"match_id"?: string,"objective"?: string | null,"set_pieces"?: NonNullable<Json>,"sub_plan"?: NonNullable<Json>,"updated_at"?: string,"version"?: number
                   }
                   Relationships: [
                     {

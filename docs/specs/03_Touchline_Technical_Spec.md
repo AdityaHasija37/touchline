@@ -4,8 +4,10 @@
 
 Architecture decisions, relational model, authorization, canvas schema, interfaces and operations
 
-| Version 0.9 | Status: Proposed | Owner: Product | 17 Oct 2026 |
+| Version 1.1 | Status: MVP shipped; 1.1 in build | Owner: Product | 20 Oct 2026 |
 |---|---|---|---|
+
+Revision history: **0.9** (17 Oct 2026) original. **1.1** (20 Oct 2026) adds the schema, contracts and rendering changes behind PRD-001 §5.1 (migration `20261021000000_roles_setpieces_subs.sql`). See §3.1, §5.1 and §7.1.
 
 Decision status: Proposed specification. Assumptions, targets, and design choices require validation; no user research or shipped capability is claimed.
 
@@ -42,6 +44,15 @@ Web clients (authenticated editor, authenticated matchday preview, public read-o
 
 Required DB indexes: teams(owner_id), players(team_id, archived_at), tactics(team_id, updated_at), matches(team_id,kickoff_at), plan_sections(plan_id,sort_order), published_plans(share_token_hash). Foreign keys need ON DELETE behaviors designed to protect historic published content.
 
+### 3.1 Release 1.1 schema additions
+
+| Table | New fields / constraints |
+|---|---|
+| lineup_assignments | player_role varchar(40) slug (`^[a-z_]{2,40}$`); duty ∈ defend/support/attack; instruction varchar(140), trimmed non-empty; CHECK bench rows carry none of the three |
+| match_plans | formation_id varchar(20) (`^[0-9]{1,2}-[0-9]{1,6}$`, validated against the team format in the server action); set_pieces jsonb object ≤ 4 KB; sub_plan jsonb object ≤ 8 KB; column UPDATE grant extended to these fields |
+
+`save_lineup` now also writes role, duty and instruction and honours explicit formation slots (`slot`), still in one transaction and still enforcing the starter cap. JSON columns are re-validated with Zod (`setPiecesSchema`, `subPlanSchema`) on every read and write; malformed stored data falls back to empty rather than breaking the plan.
+
 ## 4. Canvas JSON contract
 
 Persist typed, versioned JSON, not a serialized DOM or Konva node tree. Validate with Zod at API boundary and migrate schema versions explicitly.
@@ -65,6 +76,19 @@ Illustrative schema: { schemaVersion: 1, format: 7, orientation: "vertical", obj
 | GET /p/:token | Sanitized snapshot / rendered viewer | Token bearer; check revoked status |
 | GET /api/published/:id/pdf | PDF document | Owner or authorized public token |
 
+### 5.1 Release 1.1 server actions
+
+| Action | Input → result | Authorization / validation |
+|---|---|---|
+| saveLineup(planId, entries) | entries gain `slot`, `playerRole`, `duty`, `instruction` → saved | Owner; role must be one of the 20 known keys (matching a role to the line is a UI rule, not a data rule); duty must be one the role allows (else dropped); explicit slots used only if unique and ≤ format, otherwise slots are assigned in order |
+| updateFormation(planId, formationId \| null) | → saved | Owner; formation must exist for the match format |
+| saveSetPieces(planId, setPieces) | {captain?, penalties?, freeKicks?, cornersLeft?, cornersRight?, longThrows?, marking[≤11]} → saved | Owner; every player must currently be a starter on this plan |
+| saveSubPlan(planId, subPlan) | {matchLength 10–120, subs[≤30] of {minute, outId, inId}} → saved | Owner; minute < match length; both players in this plan's lineup or bench; sequencing problems are warnings, not errors |
+
+### 5.2 Snapshot v1, additive fields (1.1)
+
+The published snapshot stays `version: 1`; new fields are optional so every earlier briefing still parses. Players get per-briefing keys (`p1`… starters in slot order, then bench), used instead of ids everywhere: `lineup.starters[].{key, role, instruction, x, y}`, `lineup.bench[].key`, `lineup.formation`, `setPieces` (jobs → keys, marking → {key, target}), `subPlan` {matchLength, subs → {minute, outKey, inKey}, minutes per key}, and `sections[].markerRefs` (board marker id → key, for highlighting). Only jobs held by starters and only valid subs are copied; minutes are computed once at publish time. Find me (VIEW-01) is built entirely client-side from this snapshot.
+
 ## 6. Security and privacy design
 
 - Turn on PostgreSQL RLS for every exposed table and match grants to actual use; test allow/deny paths for anonymous, owner and other authenticated user.
@@ -78,6 +102,10 @@ Supabase RLS reference: https://supabase.com/docs/guides/database/postgres/row-l
 ## 7. Rendering and export consistency
 
 Define a canonical SlideSpec[] from a published snapshot. Both full-screen presentation and PDF must consume SlideSpec, not independently assemble match data. Store slide order and resolved text in the snapshot. Use an SVG/pitch renderer or equivalent deterministic drawing pipeline for export where Konva DOM is unavailable on the server.
+
+### 7.1 Release 1.1 rendering
+
+SlideSpec gains `setpieces` and `subs` kinds, and the lineup slide carries the formation and per-starter role, instruction and pitch coordinates. The pitch lineup is turned into an ordinary Board (`lib/domain/lineup-board.ts`, marker ids = player keys), so the screen SVG and the PDF draw it with the same primitives as tactic boards. The shared renderer gained two options: `captions` (names under markers) and `highlight` (a ring behind chosen markers for Find me).
 
 ## 8. Non-functional SLOs (proposed targets)
 

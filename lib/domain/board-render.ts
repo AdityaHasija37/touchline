@@ -21,7 +21,17 @@ export const PAD = 3;
 
 type Pt = { x: number; y: number };
 
-export function renderBoard(board: Board, teamColor: string, opts: { showLabels?: boolean } = {}): { width: number; height: number; prims: Prim[] } {
+export type RenderOpts = {
+  showLabels?: boolean;
+  /** Text under player markers by object id (pitch lineup: player names). */
+  captions?: Record<string, string>;
+  /** Player marker ids to ring ("Find me"). */
+  highlight?: readonly string[];
+};
+
+export const HIGHLIGHT = "#facc15";
+
+export function renderBoard(board: Board, teamColor: string, opts: RenderOpts = {}): { width: number; height: number; prims: Prim[] } {
   const showLabels = opts.showLabels ?? true;
   const vertical = board.orientation === "vertical";
   const width = (vertical ? W : L) + PAD * 2;
@@ -41,7 +51,18 @@ export function renderBoard(board: Board, teamColor: string, opts: { showLabels?
   for (const k of PITCH_MARKINGS) prims.push(marking(k, p, rect));
 
   const ordered = [...board.objects].sort((a, b) => Z[a.kind] - Z[b.kind]);
-  for (const o of ordered) prims.push(...object(o, m, rect, fill, showLabels));
+  for (const o of ordered) {
+    if (o.kind === "player" && opts.highlight?.includes(o.id)) {
+      const c = m(o);
+      prims.push({ t: "circle", cx: c.x, cy: c.y, r: 3.9, fill: HIGHLIGHT, stroke: "#ffffff", strokeWidth: 0.3 });
+    }
+    prims.push(...object(o, m, rect, fill, showLabels));
+    const caption = opts.captions?.[o.id];
+    if (caption && o.kind === "player") {
+      const c = m(o);
+      prims.push({ t: "text", x: c.x, y: c.y + 5, text: caption, size: 2, bold: true, fill: "#ffffff", anchor: "middle" });
+    }
+  }
   return { width, height, prims };
 }
 

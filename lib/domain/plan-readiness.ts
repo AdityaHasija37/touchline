@@ -11,6 +11,10 @@ export type ReadinessInput = {
   starters: { archived: boolean }[];
   sections: { title: string; type: "board" | "notes" | "reminders"; included: boolean; hasTactic: boolean; tacticFormat: number | null }[];
   objective: string | null;
+  /** Enhancements 2 and 5: advisory only, never blocking. */
+  outOfPosition?: number;
+  subProblems?: number;
+  shortMinutes?: number;
 };
 
 export function planReadiness(input: ReadinessInput): { ready: boolean; items: ReadinessItem[] } {
@@ -40,6 +44,11 @@ export function planReadiness(input: ReadinessInput): { ready: boolean; items: R
       items.push({ id: `format:${s.title}`, level: "warning", message: `“${s.title}” uses a ${s.tacticFormat}v${s.tacticFormat} board in a ${f}v${f} match.` });
     }
   }
+
+  const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+  if (input.outOfPosition) items.push({ id: "fit", level: "warning", message: `${plural(input.outOfPosition, "starter is", "starters are")} out of position.` });
+  if (input.subProblems) items.push({ id: "subs", level: "warning", message: `${plural(input.subProblems, "sub doesn't", "subs don't")} work and will be left out of the briefing.` });
+  if (input.shortMinutes) items.push({ id: "minutes", level: "warning", message: `${plural(input.shortMinutes, "player gets", "players get")} under half the match.` });
 
   if (!input.objective?.trim()) items.push({ id: "objective", level: "warning", message: "No match objective yet. Players like to know the one big idea." });
 

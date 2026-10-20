@@ -11,7 +11,8 @@ type Events = {
   player_added: Record<string, never>;
   tactic_saved: { format: number; object_count: number };
   match_plan_created: { format: number; sections_count: number };
-  plan_published: { slide_count: number; format: number };
+  /** has_formation…subs_count: adoption of the 1.1 matchday features, as counts only. */
+  plan_published: { slide_count: number; format: number; has_formation: 0 | 1; roles_count: number; set_piece_jobs: number; subs_count: number };
   presentation_opened: { viewer_type: "owner"; slide_count: number };
   pdf_exported: { viewer_type: "owner"; slide_count: number; latency_ms: number };
   share_revoked: { link_age_days: number };

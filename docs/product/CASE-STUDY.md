@@ -26,7 +26,7 @@ Most of the product work was saying no. For the MVP I deliberately left out:
 
 ## The decisions that shaped the product
 
-The [decision register](../DECISIONS.md) has around fifty entries. These are the ones I'd talk through in an interview.
+The [decision register](../DECISIONS.md) has nearly sixty entries. These are the ones I'd talk through in an interview.
 
 **1. Publishing freezes a snapshot.** When you publish, Touchline copies exactly what players will see. If you tweak the tactic on Wednesday, the briefing players got on Monday doesn't quietly change under them; you republish deliberately. *Trade-off:* a little friction ("you have unpublished changes") in exchange for players never being confused about which version is current. The same snapshot drives the full-screen presenter, the phone view and the PDF, so the three can never disagree.
 
@@ -41,6 +41,24 @@ The [decision register](../DECISIONS.md) has around fifty entries. These are the
 **6. The demo is a sandbox, not a shared account.** For people evaluating the product (recruiters included), a shared demo login means someone else's mess, or worse. Each "Try the demo" creates a private, pre-filled team that deletes itself after 24 hours.
 
 **7. Accessibility isn't a phase.** Everything you can do on the canvas has a keyboard or form alternative: an object list, numeric positions, arrow-key nudging. An automated WCAG 2.2 AA check runs across 13 screens, and it caught real contrast problems that I then fixed.
+
+## Iteration 1.1: from shape to job
+
+Once the MVP was live, I did what I'd ask a new PM to do on day one: use it for real. I built a plan as a captain, then opened the link on a phone as a player. Nothing was broken. But reading it as a player, I kept hitting the same gap. The briefing told me the team's *shape*. It didn't tell me *my job*. Positions were free text, the lineup was a list rather than a pitch, and the questions players actually ask in the car park ("who's on corners?", "am I starting?", "when am I coming off?") were buried in notes, if they were there at all.
+
+The games people already love have solved this. Football Manager gives every player a role and a duty. EA FC shows the squad on a pitch and flags anyone out of position. Both have set-piece takers and a substitution plan. The trick was taking the idea without the depth. Touchline isn't a simulation, and a Sunday captain has five minutes, not an evening.
+
+So I scoped five additions and held them to three rules:
+
+- **Grassroots-sized.** Twenty roles, not a hundred. Three duties. One line of instruction. Fit is a simple traffic light (natural, can cover, out of position), and it's always in words as well as colour.
+- **Never in the way.** None of it can block publishing (D-08). An out-of-position winger or a sub that doesn't add up becomes a warning in the checklist, and a broken sub is left out of the briefing rather than shown wrongly.
+- **The player's view is the point.** *Find me* lets a player pick their name and see only their part, then highlight themselves on every slide. It runs entirely in the browser from the briefing they already have: nothing is sent back, and nothing is logged about who looked themselves up (DEC-55). Published briefings refer to players by throwaway keys, never by database ids (DEC-53).
+
+The one I'd talk about in an interview is **fair minutes**. In grassroots football, playing time matters more than tactics: it's why people keep turning up. The sub plan shows everyone's planned minutes and flags anyone under half a game. I deliberately made that a nudge, not a rule (D-07), because some teams play to win and some play so everyone gets a game, and that's the captain's call.
+
+Testing earned its keep again. An end-to-end test caught that an unchanged plan suddenly looked "edited" after publishing. Postgres had quietly reordered the keys in a new field, so the comparison failed (DEC-57). The accessibility check caught that phone slides which now scroll couldn't be reached by keyboard. Both were fixed before release.
+
+How I'll know if it worked: `plan_published` now records counts only (whether a formation was used, how many roles, set-piece jobs and subs) so a pilot can show whether captains actually fill these in (DEC-58). Whether players use *Find me* is something I'll have to ask them. That's a deliberate trade-off for their privacy.
 
 ## What I'd measure
 
@@ -80,4 +98,5 @@ The [release assessment](../RELEASE-ASSESSMENT.md) is blunt about all of this. M
 
 1. Five conversations with captains, using the discovery guide, before building anything else.
 2. A three-to-five team pilot, measured with the events above.
-3. Depending on what we learn, the next bets are availability ("who can play Saturday?") and a second coach role. Both were deliberately cut from the MVP.
+3. Show pilot players the 1.1 briefing and ask one question: "What's your job on Saturday?" If they can answer in ten seconds, Find me is doing its job.
+4. Depending on what we learn, the next bets are availability ("who can play Saturday?") and a second coach role. Both were deliberately cut from the MVP.

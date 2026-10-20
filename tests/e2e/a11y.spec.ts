@@ -54,3 +54,30 @@ test("NFR-01: no serious or critical WCAG 2.2 AA violations on key screens", asy
   await audit(player, "unavailable page", "load");
   await ctx.close();
 });
+
+test("NFR-01 (1.1): pitch builder, set pieces, sub plan, new slides and Find me have no serious violations", async ({ browser }) => {
+  // The demo sandbox has a formation, roles, set pieces and a sub plan already filled in.
+  const ctx = await browser.newContext({ extraHTTPHeaders: { "x-forwarded-for": `10.201.${Math.floor(Math.random() * 250)}.7` }, viewport: { width: 1440, height: 1000 } });
+  const page = await ctx.newPage();
+  await page.goto("/");
+  await page.getByRole("button", { name: "Try the demo, no sign-up" }).click();
+  await page.getByRole("link", { name: /Open Saturday's match plan/ }).click();
+  await expect(page.getByRole("group", { name: "2-3-1 pitch" })).toBeVisible();
+  await page.getByRole("button", { name: /^ST: / }).click();
+  await audit(page, "match plan with pitch builder");
+
+  await page.getByRole("link", { name: "Preview & publish" }).click();
+  const url = await publish(page);
+  const { ctx: pctx, page: player } = await openAsPlayer(browser, url, { width: 375, height: 812 });
+  await expect(player.getByRole("heading", { name: "vs Riverside Dynamos" })).toBeVisible();
+  for (const label of ["2. Starting lineup", "3. Set pieces", "4. Sub plan"]) {
+    await player.getByLabel("Jump to slide").selectOption({ label });
+    await audit(player, `public ${label}`, "load");
+  }
+  await player.getByRole("button", { name: "Find me" }).click();
+  await player.getByLabel("Who are you?").selectOption({ index: 1 });
+  await expect(player.getByTestId("player-card")).toBeVisible();
+  await audit(player, "find me dialog", "load");
+  await pctx.close();
+  await ctx.close();
+});

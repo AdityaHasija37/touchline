@@ -7,8 +7,8 @@ export function DemoTour({ teamId, matchId }: { teamId: string; matchId?: string
   const steps = [
     { href: `/app/teams/${teamId}/squad`, label: "Look at the squad", hint: "9 players with numbers and positions" },
     { href: `/app/teams/${teamId}/tactics`, label: "Open the tactics board", hint: "drag players, draw a run, undo it" },
-    { href: plan, label: "Open Saturday's match plan", hint: "lineup, sections, private notes" },
-    { href: plan, label: "Preview & publish, then open the player link", hint: "what players see on their phones" },
+    { href: plan, label: "Open Saturday's match plan", hint: "squad on the pitch, roles, set pieces, sub plan" },
+    { href: plan, label: "Preview & publish, then open the player link", hint: "tap Find me and pick a player" },
   ];
   return (
     <section aria-labelledby="tour-heading" className="mb-8 rounded-2xl border border-primary/30 bg-accent p-5">

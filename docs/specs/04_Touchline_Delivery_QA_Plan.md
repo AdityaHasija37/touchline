@@ -4,8 +4,10 @@
 
 Implementation sequencing, traceability, quality gates, analytics and review decisions
 
-| Version 0.9 | Status: Proposed | Owner: Product | 17 Oct 2026 |
+| Version 1.1 | Status: MVP shipped; 1.1 in build | Owner: Product | 20 Oct 2026 |
 |---|---|---|---|
+
+Revision history: **0.9** (17 Oct 2026) original. **1.1** (20 Oct 2026) adds sprint S6, epics EP9–EP11, stories US-08 to US-11, tests QA-11 to QA-15, adoption analytics and change CR-01.
 
 Decision status: Proposed specification. Assumptions, targets, and design choices require validation; no user research or shipped capability is claimed.
 
@@ -21,6 +23,7 @@ MVP is a staged six-sprint proposal, not a deadline commitment. Each sprint prod
 | S3 · Tactical tools | Arrows, zones, text, undo and duplication | Tool behavior acceptance suite |
 | S4 · Match planning | Fixtures, lineup validation, ordered plan sections | Incomplete lineup cannot publish |
 | S5 · Briefings & launch | Snapshot, full screen, link revoke, PDF, polish | Full E2E test, pilot review, launch checklist |
+| S6 · Matchday detail (1.1) | Roles and duties, squad on the pitch, set pieces, sub plan, Find me | QA-11 to QA-15; demo sandbox shows every feature; no change to publish rules |
 
 ## 2. Prioritized backlog and traceability
 
@@ -34,6 +37,9 @@ MVP is a staged six-sprint proposal, not a deadline commitment. Each sprint prod
 | EP6 / plan sections and selected tactics | P0 | EP3; EP5 | PLAN-01 |
 | EP7 / immutable publication and view | P0 | EP6 | PRES-01; PRES-02 |
 | EP8 / PDF and quality hardening | P0 | EP7 | EXP-01; NFR-01 |
+| EP9 / roles, duties and squad on the pitch | P1 | EP5 | LINE-01; LINE-02 |
+| EP10 / set pieces and sub plan | P1 | EP9 | SETP-01; SUBS-01 |
+| EP11 / Find me on the player briefing | P1 | EP7; EP10 | VIEW-01 |
 
 ## 3. Detailed user stories and definition of done
 
@@ -79,6 +85,30 @@ As a captain, I can export PDF so that I can print or distribute the plan.
 
 Acceptance tests: Readable pitch, player names and notes; correct slide order, download works.
 
+### US-08 (1.1)
+
+As a captain, I can put my starters into a formation on a pitch and give each one a role, duty and instruction, so that every player knows their job, not just their position.
+
+Acceptance tests: Best-fit placement; swap from the pitch; fit shown in colour and text; out-of-position warning; roles filtered to the line; reload keeps everything.
+
+### US-09 (1.1)
+
+As a captain, I can say who takes each set piece and who marks whom, so that nobody argues over the ball at a corner.
+
+Acceptance tests: Only starters selectable; server rejects others; benched takers drop out of the briefing; set-piece slide appears only when set.
+
+### US-10 (1.1)
+
+As a captain, I can plan substitutions and see everyone's minutes, so that I can give a fair game to the whole squad.
+
+Acceptance tests: Default length by format; invalid subs explained and excluded; under-half warning; minutes bars on the slide.
+
+### US-11 (1.1)
+
+As a player, I can find my own name in the briefing and see only what I need to do, so that I don't have to read the whole plan on the way to the pitch.
+
+Acceptance tests: Personal card complete; highlight on every slide; works at 375 px; no internal ids in the API response; older briefings still open.
+
 Definition of Done for every story: feature matches UX copy and acceptance criteria; typed validation; authorization covered; relevant automated tests pass; empty/error states handled; no secrets exposed; accessible labels/focus; updated docs and demo evidence.
 
 ## 4. Test matrix: minimum critical paths
@@ -95,6 +125,11 @@ Definition of Done for every story: feature matches UX copy and acceptance crite
 | QA-08 | Export published plan | PDF matches section order and content |
 | QA-09 | View published plan on phone | No horizontal overflow / unreadable pitch |
 | QA-10 | Delete or archive player used historically | Historical published slide still renders |
+| QA-11 | Swap a defender into a forward slot (1.1) | Fit shows "out of position" in text; non-blocking warning; swap back clears it |
+| QA-12 | Bench a player who holds a set-piece job, then publish (1.1) | Job is not shown in the briefing; publishing still works |
+| QA-13 | Sub a player who isn't on the pitch (1.1) | Inline explanation; sub excluded from briefing; checklist warning |
+| QA-14 | Player uses Find me on a phone (1.1) | Card complete; highlight visible; no horizontal overflow |
+| QA-15 | Open a briefing published before 1.1 | Opens normally; Find me hidden |
 
 ## 5. Analytics specification
 
@@ -104,7 +139,7 @@ Definition of Done for every story: feature matches UX copy and acceptance crite
 | player_added | Player saved successfully | team_id; no name |
 | tactic_saved | Server accepts updated version | format, object_count, duration_ms |
 | match_plan_created | First plan persisted | format, sections_count |
-| plan_published | Snapshot commit succeeded | slide_count, format |
+| plan_published | Snapshot commit succeeded | slide_count, format; (1.1) has_formation, roles_count, set_piece_jobs, subs_count |
 | presentation_opened | Reader viewer loaded | viewer_type(owner/public), slide_count |
 | pdf_exported | Export completed | slide_count, latency_ms |
 | share_revoked | Owner revokes snapshot | link_age_days |
@@ -126,6 +161,8 @@ Pilot: 3–5 actual captains each prepare one upcoming match using Touchline. Ob
 | Low grassroots adoption / Product | Medium x High | Interview coaches and measure matchday usage |
 | Export inconsistency / Engineering | Medium x Medium | Shared slide model and visual regression |
 | Scope creep / Product | High x Medium | MVP boundary, changelog and signoff |
+
+Change log: **CR-01** (20 Oct 2026, product owner). Problem/evidence: a hands-on walkthrough of the shipped MVP found that players could see the team's shape but not their own job; positions were free text and set pieces and subs lived in notes. Affected: MATCH-02 (extended), PRES-01/02 (new slides), EXP-01 (new pages); new LINE-01, LINE-02, SETP-01, SUBS-01, VIEW-01. Options: free-text roles only; FM-style roles + instruction (chosen); full FM attribute model (rejected as out of scope). Privacy impact: published snapshot gains roles, instructions, set-piece and sub data the captain chose to share; players referenced by per-briefing keys, never ids. Decision: build as release 1.1; never blocks publishing. Migration 0009; tests and docs updated.
 
 Change request template: Change ID; requester/date; problem/evidence; affected requirement IDs; options; user impact; privacy impact; effort; decision owner; decision; release target; migration/test/doc impacts.
 
