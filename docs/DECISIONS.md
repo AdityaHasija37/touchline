@@ -63,6 +63,7 @@ Status values: **Adopted** (a spec default or an owner decision), **Proposed** (
 | DEC-45 | PDF engine (Q-03, owner chose react-pdf) | `@react-pdf/renderer` 4.9.0. Boards drawn from shared render primitives (`lib/domain/board-render.ts`) that the screen SVG also uses; arrowheads are explicit triangles. A4 landscape, one page per SlideSpec | Vercel-friendly; parity by construction |
 | DEC-46 | PDF fonts | Embedded Noto Sans (SIL OFL), vendored as two TTFs in `assets/fonts/`, because the built-in PDF fonts drop letters in names like "Łukasz Żółć". Covers Latin, Cyrillic and Greek; CJK, Arabic and Hebrew not yet | User names must print correctly |
 | DEC-47 | Colour tokens | `--muted-foreground` and `--destructive` darkened after the axe audit to meet WCAG AA on tinted backgrounds | NFR-01 |
+| DEC-48 | How evaluators (recruiters, curious captains) try the product | "Try the demo" creates a private, pre-filled sandbox account (7v7 team, squad, annotated tactic, ready plan) and signs in directly, with no email. Sandboxes are deleted after 24 h by opportunistic cleanup; at most 5 per visitor per hour and 300 live overall. Uses the service role for this second server-only job (extends DEC-40). `DEMO_ENABLED=false` turns it off | A shared demo account would expose visitors to each other's changes; email sign-up is too much friction for a 2-minute look |
 | DEC-13 | Board format vs. team format | Each tactic stores its own `format`. Changing the team format warns and needs explicit conversion for drafts, and never touches snapshots | PRD §6 |
 
 ## Open (blocking a later phase)
@@ -76,6 +77,7 @@ Status values: **Adopted** (a spec default or an owner decision), **Proposed** (
 | Date | Change |
 |---|---|
 | 19 Oct 2026 | Register created at M0 |
+| 20 Oct 2026 | Portfolio release: DEC-48 (demo sandboxes) |
 | 20 Oct 2026 | Phase 6: DEC-44 to DEC-47; Q-03 and Q-05 resolved |
 | 19 Oct 2026 | Phase 5: DEC-38 to DEC-43; Q-04 resolved; DEC-10 revised |
 | 19 Oct 2026 | Phase 4: DEC-31 to DEC-37; DEC-08 revised (lineup FK cascade) |

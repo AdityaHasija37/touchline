@@ -6,11 +6,14 @@ import { PageHeader } from "@/components/app/page-header";
 import { buttonVariants } from "@/components/ui/button";
 import { formatLabel } from "@/lib/domain/format";
 import { listTeams } from "@/lib/db/teams";
+import { requireUser } from "@/lib/auth/session";
+import { DemoTour } from "@/components/app/demo-tour";
 import { nextMatches } from "@/lib/db/matches";
 
 export const metadata: Metadata = { title: "Your teams · Touchline" };
 
 export default async function TeamsPage() {
+  const user = await requireUser();
   const teams = await listTeams();
   const next = await nextMatches(teams.map((t) => t.id));
 
@@ -34,6 +37,7 @@ export default async function TeamsPage() {
 
   return (
     <>
+      {user.isDemo && teams[0] && <DemoTour teamId={teams[0].id} matchId={next[teams[0].id]?.id} />}
       <PageHeader
         title="Your teams"
         actions={

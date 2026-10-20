@@ -179,7 +179,7 @@ test.describe("TAC-02 / TAC-03 editing and persistence", () => {
     await expect(card).toContainText("Defending");
     await expect(card).toContainText("11v11");
     await page.getByRole("button", { name: "Duplicate High press 4-3-3" }).click();
-    await expect(page.getByText("Copy of High press 4-3-3")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Copy of High press 4-3-3" })).toBeVisible();
 
     // Editing the copy never touches the original (J04).
     await page.getByRole("link", { name: "Copy of High press 4-3-3" }).click();

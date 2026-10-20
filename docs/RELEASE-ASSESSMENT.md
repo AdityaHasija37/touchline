@@ -29,6 +29,9 @@ All 14 P0 requirements and the P1 history requirement are implemented and covere
 6. Independent security review of RLS, the token flow and the service-role route.
 7. Free-tier Supabase has no downloadable backups. Run the restore drill in OPERATIONS.md once.
 
+**Known issue (open)**
+- **PDF text layer:** in a long-running server, an exported PDF occasionally *looks* right but its hidden text layer (used for copy-paste, search and screen readers on the PDF) maps one "." to "*". It was seen 3 times in roughly 60 full test runs and never in isolation, and verified by rendering the affected file. It doesn't affect printing or the in-app briefing. Both of react-pdf's font-reset paths are unusable (one nulls data without reloading, the other drops built-in fonts), so renders are serialised and the QA-08 test keeps any odd PDF for diagnosis. Next step: reproduce in a minimal case and report it upstream.
+
 **Known product limitations (accepted for MVP)**
 - Plan text fields are last-write-wins (DEC-37). Boards have proper conflict detection.
 - A share link is shown once and can only be rotated (DEC-39).

@@ -57,6 +57,34 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"demo_accounts": {
+                  Row: {
+                    "created_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"demo_rate": {
+                  Row: {
+                    "client_hash": string,"hits": number,"window_start": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "client_hash": string,"hits"?: number,"window_start": string
+                  }
+                  Update: {
+                    "client_hash"?: string,"hits"?: number,"window_start"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"lineup_assignments": {
                   Row: {
                     "formation_slot": number | null,"plan_id": string,"player_id": string,"position_label": string | null,"role": string
@@ -259,6 +287,12 @@ isOneToOne: false
           Functions: {
             "analytics_props_ok":
 { Args: { "p_event": string,"p_props": Json }; Returns: boolean
+                           },
+"claim_demo_slot":
+{ Args: { "p_client_hash": string }; Returns: boolean
+                           },
+"cleanup_demo_accounts":
+{ Args: Record<PropertyKey, never>; Returns: number
                            },
 "get_published_snapshot":
 { Args: { "p_client_hash": string,"p_purpose"?: string,"p_token": string }; Returns: Json

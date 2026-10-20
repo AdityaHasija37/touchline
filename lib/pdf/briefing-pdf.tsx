@@ -185,9 +185,10 @@ function PrimPdf({ p }: { p: Prim }) {
   }
 }
 
-// Renders run one at a time per server process. Once in a full E2E run a PDF came out with one
-// wrong glyph mapping ("." extracted as "*"). It couldn't be reproduced (24 concurrent renders,
-// 39 repeated E2E runs), but shared font subsetting is the likely suspect and serialising is cheap.
+// Known issue (see RELEASE-ASSESSMENT.md): in a long-running server, react-pdf occasionally emits a
+// PDF whose page renders correctly but whose hidden text layer maps "." to "*" (3 of ~60 full E2E
+// runs; never in isolation). Resetting fonts between renders isn't possible: Font.reset() nulls data
+// without reloading and Font.clear() drops the built-in fonts. Renders are serialised as a precaution.
 let queue: Promise<unknown> = Promise.resolve();
 
 export function renderBriefingPdf(snapshot: Snapshot): Promise<Buffer> {

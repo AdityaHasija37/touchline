@@ -36,7 +36,7 @@ EXP-01, NFR-01 (accessibility smoke), QA-08, TECH-003 §9 full E2E, the PRD laun
 3. **Colour contrast** (axe, serious): muted text on tinted cards and the delete button's red. Tokens darkened (DEC-47).
 4. **Opening a second share link in the same tab kept showing the first briefing** (only the fragment changed). The page now reloads on `hashchange`, with stale requests cancelled. Regression test added.
 5. Test assumptions corrected: seeded squads and never-re-saved tactics don't emit `player_added` / `tactic_saved`, which is correct behaviour. The journey test covers both.
-6. **Seen once, not reproduced:** one PDF in a full parallel run extracted "midfield*" instead of "midfield.". Not reproduced in 24 concurrent renders or in 39 repeated PDF/journey/publish E2E runs. Mitigation: renders are serialised per process. Recorded as an open risk.
+6. **Open, narrowed down:** in full parallel E2E runs, a PDF occasionally extracts "midfield*" instead of "midfield." (3 of ~60 runs; 0 in 108 targeted reproductions, 60 varied sequential renders and 24 concurrent ones). The QA-08 test now keeps the odd file: rendering it shows the **page is visually correct**, and only the hidden text layer maps "." to "*". It's likely react-pdf font state reused across renders. Both reset APIs were tried and rejected (`Font.reset()` breaks loading; `Font.clear()` drops built-in fonts). Renders stay serialised; it's tracked in RELEASE-ASSESSMENT as an open issue.
 
 ## Visual verification
 `docs/evidence/phase-6/pdf-page-1…4.png`: pages rendered from a real export (pdfjs in Chromium, via `scripts/render-pdf-pages.mjs`) and reviewed by eye. The board page matches the on-screen board.
