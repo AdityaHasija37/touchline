@@ -20,7 +20,7 @@ All 14 P0 requirements and the P1 history requirement are implemented and covere
 ## Gaps, by severity
 **Blocking a real pilot**
 1. **No discovery or pilot evidence.** The 5 interviews (PRD §2.2) and 3–5 pilot captains haven't happened. The value proposition is still a hypothesis, and G1–G4 are unmeasured.
-2. **Not deployed.** It needs the owner's accounts, custom SMTP for confirmation emails, and the DEPLOY.md smoke test (including rate limiting behind Vercel's real headers and the "no tokens in logs" check).
+2. **Deployed as a demo, not yet pilot-ready.** Live at touchline-olive-six.vercel.app; a live smoke test passed (demo, publish, phone view, PDF, revoke). Still needed for real users: custom SMTP for confirmation emails, and checking the rate limit behind Vercel's real headers.
 3. **Contact and data-request process.** The privacy page and runbook need a real contact address. Account deletion is operator-run SQL, not self-service.
 
 **Should fix soon**

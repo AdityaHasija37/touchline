@@ -1,6 +1,6 @@
 # Deploying Touchline (Vercel + Supabase)
 
-Status: **not deployed.** This is the checklist for the first deployment (DEC-03). It needs the owner's own Vercel and Supabase accounts, and nothing deploys automatically.
+Status: **deployed 20 Oct 2026** at https://touchline-olive-six.vercel.app (Vercel Hobby + Supabase Free, linked with the Supabase–Vercel integration). This is the checklist that was followed, kept for redeploys.
 
 ## 0. Before you start
 - Push the repo to GitHub (it's currently local-only).
@@ -19,8 +19,8 @@ Then, in the dashboard, confirm RLS shows as enabled on every `public` table.
 ## 2. Auth settings (dashboard → Authentication)
 - **Site URL:** `https://<your-domain>`. **Redirect URLs:** `https://<your-domain>/**`.
 - **Email confirmations:** on (DEC-14).
-- **Email templates:** copy `supabase/templates/confirmation.html` and `recovery.html` into the Confirm signup and Reset password templates, or use `npx supabase config push`. Both use the token-hash link to `/auth/confirm`.
-- **SMTP:** set up custom SMTP (e.g. Resend, Postmark or SES). Supabase's built-in sender is heavily rate-limited and won't deliver to arbitrary users, so without this nobody outside your team can confirm an account.
+- **Email templates:** optional. `/auth/confirm` accepts both Supabase's default links (`?code=`) and the custom token-hash templates in `supabase/templates/`. Supabase only lets you edit templates after setting up custom SMTP; the custom ones also work when the email is opened on a different device.
+- **SMTP:** without custom SMTP (e.g. Resend, Postmark or SES), Supabase's built-in sender only delivers to members of your Supabase organization, so the public can't confirm real accounts. The one-click demo needs no email, which is why it's the recruiter path.
 - Minimum password length: 8.
 
 ## 3. Vercel

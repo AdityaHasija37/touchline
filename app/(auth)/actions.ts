@@ -40,7 +40,7 @@ export async function signUp(_prev: ActionState, formData: FormData): Promise<Ac
     password: parsed.data.password,
     options: {
       data: { display_name: parsed.data.displayName || null },
-      emailRedirectTo: `${siteUrl()}/app/teams`,
+      emailRedirectTo: `${siteUrl()}/auth/confirm?next=/app/teams`,
     },
   });
   if (error) {
@@ -62,7 +62,7 @@ export async function requestPasswordReset(_prev: ActionState, formData: FormDat
 
   const supabase = await createClient();
   await supabase.auth.resetPasswordForEmail(parsed.data.email, {
-    redirectTo: `${siteUrl()}/reset-password/update`,
+    redirectTo: `${siteUrl()}/auth/confirm?next=/reset-password/update`,
   });
   return {
     status: "success",

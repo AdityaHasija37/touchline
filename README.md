@@ -2,7 +2,8 @@
 
 **Match preparation for grassroots football captains.** Pick the squad, draw the shape, plan Saturday, and send players a briefing they can open on their phones.
 
-**▶ Live demo: _link added after deployment_.** Click **"Try the demo, no sign-up"** and you're dropped into a private sandbox with a ready-made 7v7 team.
+### ▶ [Try the live demo](https://touchline-olive-six.vercel.app)
+Click **"Try the demo, no sign-up"** and you're dropped into a private sandbox with a ready-made 7v7 team. It takes two minutes, and the sandbox deletes itself after 24 hours.
 
 ![The Touchline tactics editor](docs/images/editor.jpg)
 
@@ -26,7 +27,7 @@ That's a hypothesis, not a finding. I haven't run user interviews or a pilot yet
 | ![Publish screen](docs/images/publish.jpg) | ![Player view on a phone](docs/images/phone.jpg) |
 
 ## Try it in two minutes
-1. Open the live demo and click **Try the demo**.
+1. Open the [live demo](https://touchline-olive-six.vercel.app) and click **Try the demo**.
 2. Follow the tour card: squad → tactics board (drag a player, draw a run, press ⌘Z) → Saturday's match plan.
 3. Hit **Preview & publish**, then open the player link on your phone.
 4. Notice what's *not* there: the private note on the first section, and the squad members who weren't picked.
@@ -59,7 +60,7 @@ I worked as the product owner, with an AI coding agent (Claude Code) as the engi
 **Quality at the time of writing:** 90 unit tests, 119 database assertions and 50 end-to-end browser tests. They cover every P0 requirement in the PRD ([details](docs/TRACEABILITY.md)).
 
 ## Status and honest caveats
-- An MVP built as a portfolio project. Not yet tested with real captains or on real phones.
+- An MVP built as a portfolio project, deployed on Vercel + Supabase. Not yet tested with real captains or on real phones.
 - The demo sandbox deletes itself after 24 hours.
 - See the [release assessment](docs/RELEASE-ASSESSMENT.md) for the full list of what's verified and what isn't.
 
