@@ -31,8 +31,8 @@ Import the GitHub repo (framework: Next.js) and set these environment variables.
 | `NEXT_PUBLIC_SUPABASE_URL` | all | Project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | all | Anon/publishable key |
 | `SUPABASE_SERVICE_ROLE_KEY` | **server only, sensitive** | Used only by two server-side jobs: the public briefing lookup (DEC-40) and demo sandboxes (DEC-48) |
-| `SHARE_RATE_SALT` | server only, sensitive | Long random string. Required in production |
-| `NEXT_PUBLIC_SITE_URL` | all | `https://<your-domain>`, used in share links and auth emails |
+| `SHARE_RATE_SALT` | server only, sensitive | Optional. Rate-limit key; falls back to a keyed hash of the service-role key |
+| `NEXT_PUBLIC_SITE_URL` | all | Optional on Vercel (uses the platform's production domain); set it for a custom domain |
 | `NEXT_PUBLIC_CONTACT_EMAIL` | all | Optional; shown on `/privacy` |
 | `DEMO_ENABLED` | server | Optional. Defaults to on; set `false` to hide "Try the demo" |
 

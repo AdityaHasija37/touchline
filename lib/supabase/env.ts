@@ -10,6 +10,13 @@ export function supabaseAnonKey(): string {
   return key;
 }
 
+/**
+ * Public origin for share links and auth emails. NEXT_PUBLIC_SITE_URL wins; on Vercel the
+ * platform-provided production domain is used, so no manual setting is needed.
+ */
 export function siteUrl(): string {
-  return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL;
+  if (process.env.VERCEL_ENV === "production" && process.env.VERCEL_PROJECT_PRODUCTION_URL) return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return "http://localhost:3000";
 }
