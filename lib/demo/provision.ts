@@ -39,7 +39,10 @@ export async function provisionDemo(ip: string): Promise<{ status: "ok"; email: 
   const db = createDemoProvisioningClient();
   const { data: allowed } = await db.rpc("claim_demo_slot", { p_client_hash: clientKey(ip) });
   if (!allowed) return { status: "busy" };
-  await db.rpc("cleanup_demo_accounts"); // opportunistic expiry, no cron needed
+  // Opportunistic expiry, no cron needed: delete sandboxes older than 24 h via the Auth admin API
+  // (deleting the user cascades to all of its data and links).
+  const { data: expired } = await db.rpc("expired_demo_accounts", { p_limit: 20 });
+  for (const id of (expired as string[] | null) ?? []) await db.auth.admin.deleteUser(id);
 
   const email = `demo-${randomBytes(6).toString("hex")}@demo.touchline.invalid`;
   const password = randomBytes(24).toString("base64url");

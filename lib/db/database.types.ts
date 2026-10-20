@@ -291,8 +291,8 @@ isOneToOne: false
 "claim_demo_slot":
 { Args: { "p_client_hash": string }; Returns: boolean
                            },
-"cleanup_demo_accounts":
-{ Args: Record<PropertyKey, never>; Returns: number
+"expired_demo_accounts":
+{ Args: { "p_limit"?: number }; Returns: string[]
                            },
 "get_published_snapshot":
 { Args: { "p_client_hash": string,"p_purpose"?: string,"p_token": string }; Returns: Json
