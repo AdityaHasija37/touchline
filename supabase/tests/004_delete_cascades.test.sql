@@ -18,7 +18,7 @@ reset role;
 
 savepoint before_team_delete;
 select lives_ok($$ delete from public.teams where id = '11111111-0000-0000-0000-000000000001' $$, 'deleting a team with lineups cascades');
-select is((select count(*)::int from public.lineup_assignments), 0, 'lineups removed with the team');
+select is((select count(*)::int from public.lineup_assignments where plan_id = 'd0000000-0000-0000-0000-000000000001'), 0, 'lineups removed with the team');
 rollback to savepoint before_team_delete;
 
 select lives_ok($$ delete from auth.users where id = 'aaaaaaaa-0000-0000-0000-000000000001' $$, 'deleting an account with lineups cascades');

@@ -23,7 +23,27 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "lineup_assignments": {
+            "audit_events": {
+                  Row: {
+                    "action": string,"actor_id": string,"created_at": string,"id": string,"resource_id": string,"resource_type": string,"team_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "action": string,"actor_id"?: string,"created_at"?: string,"id"?: string,"resource_id": string,"resource_type": string,"team_id"?: string | null
+                  }
+                  Update: {
+                    "action"?: string,"actor_id"?: string,"created_at"?: string,"id"?: string,"resource_id"?: string,"resource_type"?: string,"team_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "audit_events_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "teams"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"lineup_assignments": {
                   Row: {
                     "formation_slot": number | null,"plan_id": string,"player_id": string,"position_label": string | null,"role": string
                   }
@@ -149,6 +169,40 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"published_plans": {
+                  Row: {
+                    "id": string,"plan_id": string,"published_at": string,"published_by": string,"revoked_at": string | null,"share_token_hash": string,"slide_count": number,"snapshot_json": NonNullable<Json>
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "id"?: string,"plan_id": string,"published_at"?: string,"published_by"?: string,"revoked_at"?: string | null,"share_token_hash": string,"slide_count": number,"snapshot_json": NonNullable<Json>
+                  }
+                  Update: {
+                    "id"?: string,"plan_id"?: string,"published_at"?: string,"published_by"?: string,"revoked_at"?: string | null,"share_token_hash"?: string,"slide_count"?: number,"snapshot_json"?: NonNullable<Json>
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "published_plans_plan_id_fkey"
+      columns: ["plan_id"]
+isOneToOne: false
+      referencedRelation: "match_plans"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"share_lookup_counters": {
+                  Row: {
+                    "client_hash": string,"hits": number,"window_start": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "client_hash": string,"hits"?: number,"window_start": string
+                  }
+                  Update: {
+                    "client_hash"?: string,"hits"?: number,"window_start"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"tactics": {
                   Row: {
                     "board_json": NonNullable<Json>,"board_schema_version": number,"category": string,"created_at": string,"format": number,"id": string,"name": string,"team_id": string,"updated_at": string,"version": number
@@ -189,7 +243,10 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "is_match_owner":
+            "get_published_snapshot":
+{ Args: { "p_client_hash": string,"p_token": string }; Returns: Json
+                           },
+"is_match_owner":
 { Args: { "p_match_id": string }; Returns: boolean
                            },
 "is_plan_owner":

@@ -7,7 +7,7 @@ import { AlertTriangle, CheckCircle2, FileText, LayoutTemplate, ListChecks, MapP
 import { toast } from "sonner";
 import { BoardSvg } from "@/components/board/board-svg";
 import { EmptyState } from "@/components/app/empty-state";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { addSection, deleteMatch, updateMatch, updateObjective } from "@/app/(app)/app/matches/actions";
@@ -164,13 +164,11 @@ export function PlanEditor({
                 </li>
               ))}
             </ul>
-            <Button className="mt-4 w-full" disabled aria-describedby="publish-help">
+            <Link href={`/app/plans/${plan.id}/publish`} className={buttonVariants({ className: "mt-4 w-full" })} aria-describedby="publish-help">
               Preview &amp; publish
-            </Button>
+            </Link>
             <p id="publish-help" className="mt-2 text-xs text-muted-foreground">
-              {blocking.length
-                ? "Fix the required items above. Your draft is saved either way."
-                : "Ready. Publishing to a private player link arrives in the next release."}
+              {blocking.length ? "You can preview now. Fix the required items above to publish. Your draft is saved either way." : "Ready to publish."}
             </p>
           </section>
           <section className="flex gap-2 rounded-2xl border bg-card p-4 text-sm text-muted-foreground">

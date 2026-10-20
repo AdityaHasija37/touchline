@@ -10,6 +10,8 @@ const PORT = Number(process.env.PORT ?? 3000);
 export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: false,
+  // One local dev server serves every worker; more than 2 overloads it on a typical laptop.
+  workers: 2,
   retries: process.env.CI ? 2 : 0,
   reporter: [["list"], ["html", { open: "never" }]],
   use: {

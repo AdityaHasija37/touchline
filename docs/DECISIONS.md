@@ -28,7 +28,7 @@ Status values: **Adopted** (a spec default or an owner decision), **Proposed** (
 | DEC-07 | Team deletion vs. existing share links | Deleting a team cascades and **revokes** its published links. Viewers see the generic unavailable page | Deleting a team should remove its data. Keeping public copies alive afterwards would surprise people |
 | DEC-08 | QA-10 says "delete or archive player" | Players are **archive-only** (no DELETE grant). The lineup FK is `cascade`, so it only fires when a whole team or account is deleted (`restrict` broke team deletion; fixed in Phase 4). Snapshots embed name and number anyway | TEAM-02 only specifies archive |
 | DEC-09 | "Timezone-aware kickoff" | Store `kickoff_at timestamptz` plus `kickoff_tz` (IANA, captured from the browser) and display in that zone | A fixture's local time shouldn't move when viewed from elsewhere |
-| DEC-10 | Public token read path | SECURITY DEFINER RPC `get_published_snapshot(token)` hashes the token in SQL. No service-role key in request paths | Least privilege. Anon has zero table grants |
+| DEC-10 | Public token read path | SECURITY DEFINER RPC `get_published_snapshot(token, client_hash)` hashes the token in SQL and returns only the snapshot. *Revised by DEC-40:* callable only by the app server | Least privilege. Anon has zero table grants and no RPC access |
 | DEC-11 | Who may export PDF | The owner, or anyone holding a valid unrevoked token (TECH-003 §5) | As specified |
 | DEC-12 | Pitch geometry | 0–100 on both axes mapped onto a 68 × 105 pitch. `orientation` stored per board, default vertical | ADR-02, UX §5 |
 | DEC-16 | Position vocabulary unspecified | A fixed set: GK / DEF / MID / FWD, enforced in Zod and a DB CHECK | Grassroots-friendly vocabulary. Finer roles can come later |
@@ -53,6 +53,12 @@ Status values: **Adopted** (a spec default or an owner decision), **Proposed** (
 | DEC-35 | Publish readiness | A pure `planReadiness()` drives the S07 checklist now and will gate the publish action in Phase 5. Blocking: starters ≠ format, no included sections, a board section without a tactic. Warnings: archived starters, format mismatch, missing objective | QA-05; one rule set, used in UI and server |
 | DEC-36 | Where kickoff times are formatted | Server only; passed to client components as text | Node and browser ICU data disagree ("GMT" vs "GMT+0") and caused hydration mismatches |
 | DEC-37 | Plan concurrency | Last write wins per field for plan text (single owner, field-level saves). Lineup is replaced as a whole. Boards keep optimistic concurrency (DEC-20) | Low conflict risk in MVP (ADR-04); revisit with multi-coach roles |
+| DEC-38 | Where the share token goes in the URL | `/p#<token>`: the token is in the fragment, which browsers never send to servers, and the page POSTs it to `/api/briefing`. It never appears in access or Vercel logs or in `Referer` headers. Deviates from TECH-003's illustrative `GET /p/:token` | Brief: "treat public share tokens as secrets; never print them to logs" |
+| DEC-39 | Showing the link again | Only the SHA-256 hash is stored (TECH-003 §6), so the link is shown once at publish. "Get a new link" rotates the token (old link dies). Republish keeps the same link and updates its content | Spec forbids storing raw tokens; rotation keeps owners unblocked |
+| DEC-40 | Rate limiting public lookups (Q-04, owner chose a Postgres counter) | 60 lookups per salted-hash-of-IP per minute in `share_lookup_counters`. Only the app server can call `get_published_snapshot` (service role, one server-only route), because anon calling it via the REST API could pass any client hash and dodge the limit. **Revises DEC-10**: the service-role key is now used in exactly this one request path. IP header preference: `x-vercel-forwarded-for` → `x-real-ip` → `x-forwarded-for` | Limit can't be bypassed; no paid service |
+| DEC-41 | Draft vs published detection | The publish screen builds a fresh snapshot and compares content fingerprints (ignoring publish time) with the live one | Catches tactic, lineup and section edits, not just plan-text edits |
+| DEC-42 | Caching of `/p` | The `/p` shell holds no data, so Next may cache it; `/api/briefing` is `no-store`. Both are `noindex` + `Referrer-Policy: no-referrer` | Sensitive content only travels in no-store API responses |
+| DEC-43 | Owner presenter source | `/present` shows the published snapshot; `?source=draft` (or an unpublished plan) shows a clearly labelled draft preview built by the same snapshot and SlideSpec code | One renderer, no drift between preview and what players see |
 | DEC-13 | Board format vs. team format | Each tactic stores its own `format`. Changing the team format warns and needs explicit conversion for drafts, and never touches snapshots | PRD §6 |
 
 ## Open (blocking a later phase)
@@ -60,7 +66,6 @@ Status values: **Adopted** (a spec default or an owner decision), **Proposed** (
 | ID | Question | Blocks | Options |
 |---|---|---|---|
 | Q-03 | PDF engine (needs approval, as a major dependency) | Phase 6 | (a) `@react-pdf/renderer` drawing the pitch with its SVG primitives: pure JS, Vercel-friendly. (b) Headless Chromium printing the slide page: highest parity, heavy on serverless |
-| Q-04 | Rate limiting `/p/:token` without a paid service | Phase 5 | (a) Postgres counter per IP hash per minute. (b) Vercel's platform firewall rules. (c) In-memory, best effort |
 | Q-05 | Analytics sink (PLAN-004 §5) | Phase 6 | (a) An `analytics_events` table with the allowlisted properties only. (b) Structured server logs only |
 
 ## Change log
@@ -68,6 +73,7 @@ Status values: **Adopted** (a spec default or an owner decision), **Proposed** (
 | Date | Change |
 |---|---|
 | 19 Oct 2026 | Register created at M0 |
+| 19 Oct 2026 | Phase 5: DEC-38 to DEC-43; Q-04 resolved; DEC-10 revised |
 | 19 Oct 2026 | Phase 4: DEC-31 to DEC-37; DEC-08 revised (lineup FK cascade) |
 | 19 Oct 2026 | Phase 3: DEC-25 to DEC-30 added |
 | 19 Oct 2026 | Phase 2: DEC-19 to DEC-24 added |

@@ -59,14 +59,17 @@ test("MATCH-01: fixtures with timezone-aware kickoff, optional venue, edit and d
 test("MATCH-02 + QA-05: lineup caps, publish blocked until 7 starters, draft kept", async ({ page }) => {
   const teamId = await teamWithSquad(page, "lineup");
   await createFixture(page, teamId, "United");
-  const publish = page.getByRole("button", { name: "Preview & publish" });
 
   for (const name of SQUAD.slice(0, 6)) await page.getByRole("button", { name: `Start ${name}` }).click();
   await page.getByRole("button", { name: `Bench ${SQUAD[7]}` }).click();
   await waitLineupSaved(page);
   await expect(page.getByTestId("starter-count")).toHaveText("6/7");
   await expect(page.getByText("Add all 7 starters before publishing this 7v7 match plan.")).toBeVisible();
-  await expect(publish).toBeDisabled();
+  // QA-05: the publish action itself is disabled, with the reason, on the publish screen.
+  await page.getByRole("link", { name: "Preview & publish" }).click();
+  await expect(page.getByRole("button", { name: "Publish briefing" })).toBeDisabled();
+  await expect(page.getByRole("list", { name: "Required before publishing" })).toContainText("Add all 7 starters");
+  await page.goBack();
 
   // Draft retained across reload.
   await page.reload();
@@ -97,7 +100,6 @@ test("MATCH-02 + QA-05: lineup caps, publish blocked until 7 starters, draft kep
   await expect(page.getByLabel(`Position for ${SQUAD[0]}`)).toHaveValue("GK");
   // Still blocked: no sections yet.
   await expect(page.getByText("Add at least one section to the briefing.")).toBeVisible();
-  await expect(publish).toBeDisabled();
 });
 
 test("archived players are not offered for new lineups but stay where already picked", async ({ page }) => {
@@ -171,7 +173,7 @@ test("PLAN-01: objective, ordered sections with tactics, notes, private notes an
   // A full lineup + sections = ready (publishing itself is Phase 5).
   for (const name of SQUAD.slice(0, 7)) await page.getByRole("button", { name: `Start ${name}` }).click();
   await waitLineupSaved(page);
-  await expect(page.getByText("Ready. Publishing to a private player link arrives in the next release.")).toBeVisible();
+  await expect(page.getByText("Ready to publish.")).toBeVisible();
   expect(matchId).toBeTruthy();
 });
 
