@@ -10,7 +10,14 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </Link>
       </header>
       <main className="flex flex-1 items-start justify-center px-4 pt-8 pb-16 sm:pt-16">
-        <div className="w-full max-w-sm">{children}</div>
+        <div className="w-full max-w-sm">
+          {children}
+          <p className="mt-6 text-center text-xs text-muted-foreground">
+            <Link href="/privacy" className="hover:underline">
+              How we handle your data
+            </Link>
+          </p>
+        </div>
       </main>
     </div>
   );

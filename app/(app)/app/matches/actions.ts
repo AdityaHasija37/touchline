@@ -16,6 +16,7 @@ import {
   type LineupEntry,
   type SectionType,
 } from "@/lib/validation/match";
+import { track } from "@/lib/analytics/track";
 
 const uuid = z.uuid();
 const NOT_FOUND: ActionState = { status: "error", message: "That fixture no longer exists or you don't have access." };
@@ -72,6 +73,7 @@ export async function createMatch(teamId: string, _prev: ActionState, fd: FormDa
   if (error) return { status: "error", message: "Couldn't create the fixture. Try again.", values: raw };
   // A missing plan is recreated on first open (getPlanView), so this failure isn't fatal.
   await supabase.from("match_plans").insert({ match_id: match.id });
+  await track("match_plan_created", teamId, { format: team.match_format, sections_count: 0 });
 
   revalidatePath(`/app/teams/${teamId}/matches`);
   revalidatePath("/app/teams");

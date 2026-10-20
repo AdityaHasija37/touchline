@@ -59,20 +59,24 @@ Status values: **Adopted** (a spec default or an owner decision), **Proposed** (
 | DEC-41 | Draft vs published detection | The publish screen builds a fresh snapshot and compares content fingerprints (ignoring publish time) with the live one | Catches tactic, lineup and section edits, not just plan-text edits |
 | DEC-42 | Caching of `/p` | The `/p` shell holds no data, so Next may cache it; `/api/briefing` is `no-store`. Both are `noindex` + `Referrer-Policy: no-referrer` | Sensitive content only travels in no-store API responses |
 | DEC-43 | Owner presenter source | `/present` shows the published snapshot; `?source=draft` (or an unpublished plan) shows a clearly labelled draft preview built by the same snapshot and SlideSpec code | One renderer, no drift between preview and what players see |
+| DEC-44 | Analytics sink (Q-05) | `analytics_events` table, written only via `track_event()` (owner-checked, per-event property allowlist) or inside the public lookup. Teams are referenced by a random `analytics_id` users can't read, so events are unlinkable once a team is deleted. Best effort; never blocks a user | PLAN-004 §5: safe properties only, pseudonymous, deletion path |
+| DEC-45 | PDF engine (Q-03, owner chose react-pdf) | `@react-pdf/renderer` 4.9.0. Boards drawn from shared render primitives (`lib/domain/board-render.ts`) that the screen SVG also uses; arrowheads are explicit triangles. A4 landscape, one page per SlideSpec | Vercel-friendly; parity by construction |
+| DEC-46 | PDF fonts | Embedded Noto Sans (SIL OFL), vendored as two TTFs in `assets/fonts/`, because the built-in PDF fonts drop letters in names like "Łukasz Żółć". Covers Latin, Cyrillic and Greek; CJK, Arabic and Hebrew not yet | User names must print correctly |
+| DEC-47 | Colour tokens | `--muted-foreground` and `--destructive` darkened after the axe audit to meet WCAG AA on tinted backgrounds | NFR-01 |
 | DEC-13 | Board format vs. team format | Each tactic stores its own `format`. Changing the team format warns and needs explicit conversion for drafts, and never touches snapshots | PRD §6 |
 
 ## Open (blocking a later phase)
 
 | ID | Question | Blocks | Options |
 |---|---|---|---|
-| Q-03 | PDF engine (needs approval, as a major dependency) | Phase 6 | (a) `@react-pdf/renderer` drawing the pitch with its SVG primitives: pure JS, Vercel-friendly. (b) Headless Chromium printing the slide page: highest parity, heavy on serverless |
-| Q-05 | Analytics sink (PLAN-004 §5) | Phase 6 | (a) An `analytics_events` table with the allowlisted properties only. (b) Structured server logs only |
+| (none open) | All MVP questions resolved; see DEC-44/45 | n/a | n/a |
 
 ## Change log
 
 | Date | Change |
 |---|---|
 | 19 Oct 2026 | Register created at M0 |
+| 20 Oct 2026 | Phase 6: DEC-44 to DEC-47; Q-03 and Q-05 resolved |
 | 19 Oct 2026 | Phase 5: DEC-38 to DEC-43; Q-04 resolved; DEC-10 revised |
 | 19 Oct 2026 | Phase 4: DEC-31 to DEC-37; DEC-08 revised (lineup FK cascade) |
 | 19 Oct 2026 | Phase 3: DEC-25 to DEC-30 added |

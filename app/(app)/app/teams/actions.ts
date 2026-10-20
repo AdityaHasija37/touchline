@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 import { fieldErrorsOf, type ActionState } from "@/lib/validation/form";
 import { playerSchema } from "@/lib/validation/player";
 import { teamSchema } from "@/lib/validation/team";
+import { track } from "@/lib/analytics/track";
 
 const uuid = z.uuid();
 const NOT_FOUND: ActionState = { status: "error", message: "That item no longer exists or you don't have access." };
@@ -40,6 +41,7 @@ export async function createTeam(_prev: ActionState, fd: FormData): Promise<Acti
     .single();
   if (error) return { status: "error", message: "Couldn't create the team. Try again.", values: raw };
 
+  await track("team_created", data.id, { format: parsed.data.matchFormat });
   revalidatePath("/app/teams");
   redirect(`/app/teams/${data.id}/squad`);
 }
@@ -100,6 +102,7 @@ export async function addPlayer(teamId: string, _prev: ActionState, fd: FormData
   // RLS rejects inserts into teams the caller doesn't own (42501).
   if (error) return error.code === "42501" ? NOT_FOUND : { status: "error", message: "Couldn't add the player. Try again.", values: raw };
 
+  await track("player_added", teamId, {});
   revalidatePath(`/app/teams/${teamId}`, "layout");
   return { status: "success", message: `${parsed.data.name} added to the squad.` };
 }

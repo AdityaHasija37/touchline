@@ -2,7 +2,7 @@
 
 Match preparation for grassroots football captains. Roster → fixture → lineup → tactics boards → a frozen matchday briefing players can open on their phones.
 
-> Status: **in development, Phase 5 done (auth, squad, tactics editor, match plans, publish/present/share)**. No user research, pilot results or deployment exist yet. Specs are proposals (v0.9).
+> Status: **in development, MVP feature-complete (Phase 6); not deployed**. No user research, pilot results or deployment exist yet. Specs are proposals (v0.9).
 
 ## Docs
 - `docs/specs/`: PRD-001, UX-002, TECH-003, PLAN-004 and the build brief (original .docx plus text copies)

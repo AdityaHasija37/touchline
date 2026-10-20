@@ -62,3 +62,11 @@ export async function addPlayers(teamId: string, players: { name: string; shirt_
   const { error } = await admin().from("players").insert(players.map((p) => ({ team_id: teamId, ...p })));
   if (error) throw error;
 }
+
+/** Test-only: analytics events recorded for a team (read via the local service role). */
+export async function analyticsEvents(teamId: string): Promise<{ event: string; props: Record<string, unknown> }[]> {
+  const db = admin();
+  const { data: team } = await db.from("teams").select("analytics_id").eq("id", teamId).single();
+  const { data } = await db.from("analytics_events").select("event, props").eq("team_ref", team!.analytics_id).order("id");
+  return (data ?? []) as { event: string; props: Record<string, unknown> }[];
+}

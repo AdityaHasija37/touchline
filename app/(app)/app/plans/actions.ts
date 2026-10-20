@@ -8,6 +8,7 @@ import { siteUrl } from "@/lib/supabase/env";
 import { loadPlanForPublishing } from "@/lib/db/publications";
 import { buildSlides } from "@/lib/domain/slides";
 import { generateShareToken, hashShareToken, shareUrl } from "@/lib/share/token";
+import { track } from "@/lib/analytics/track";
 
 type PublishResult =
   | { status: "published"; url: string }
@@ -51,6 +52,7 @@ export async function publishPlan(planId: string): Promise<PublishResult> {
       .is("revoked_at", null);
     if (error) return { status: "error", message: "Couldn't republish. Your draft is unchanged; try again." };
     await audit(view.match.teamId, "plan_republished", publication.id);
+    await track("plan_published", view.match.teamId, { slide_count: slideCount, format: view.match.format });
     refresh(planId, view.match.id);
     return { status: "republished" };
   }
@@ -63,6 +65,7 @@ export async function publishPlan(planId: string): Promise<PublishResult> {
     .single();
   if (error) return { status: "error", message: "Couldn't publish. Your draft is unchanged; try again." };
   await audit(view.match.teamId, "plan_published", data.id);
+  await track("plan_published", view.match.teamId, { slide_count: slideCount, format: view.match.format });
   refresh(planId, view.match.id);
   return { status: "published", url: shareUrl(siteUrl(), token) };
 }
@@ -81,6 +84,7 @@ export async function revokeLink(planId: string): Promise<{ status: "revoked" } 
     .select("id");
   if (error || !data.length) return { status: "error", message: "Couldn't revoke the link. Try again." };
   await audit(view.match.teamId, "share_revoked", publication.id);
+  await track("share_revoked", view.match.teamId, { link_age_days: Math.floor((Date.now() - new Date(publication.publishedAt).getTime()) / 86_400_000) });
   refresh(planId, view.match.id);
   return { status: "revoked" };
 }

@@ -16,7 +16,10 @@ export function Viewer({
   matchLabel,
   banner,
   exitHref,
+  actions,
 }: {
+  /** Extra header controls, e.g. a PDF download button. */
+  actions?: React.ReactNode;
   slides: SlideSpec[];
   teamColor: string;
   matchLabel: string;
@@ -75,6 +78,7 @@ export function Viewer({
           >
             {isFull ? <Minimize className="size-4" /> : <Maximize className="size-4" />}
           </button>
+          {actions}
           {exitHref && (
             <a href={exitHref} className="rounded-md px-2 py-1 text-sm text-zinc-300 hover:bg-zinc-800 focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:outline-none">
               Exit

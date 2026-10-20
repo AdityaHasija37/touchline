@@ -34,7 +34,7 @@ select throws_ok($$ insert into public.published_plans (plan_id, share_token_has
   values ('d0000000-0000-0000-0000-000000000001', repeat('b', 64), '{"version":1}', 1) $$, '23505', null, 'only one live link per plan');
 select lives_ok($$ insert into public.audit_events (team_id, action, resource_type, resource_id)
   select '11111111-0000-0000-0000-000000000001', 'plan_published', 'published_plan', id from public.published_plans $$, 'owner records an audit event');
-select throws_ok($$ select public.get_published_snapshot('x', repeat('a', 64)) $$, '42501', null, 'signed-in users cannot call the lookup directly');
+select throws_ok($$ select public.get_published_snapshot('x', repeat('a', 64), 'view') $$, '42501', null, 'signed-in users cannot call the lookup directly');
 
 -- Other user ----------------------------------------------------------------------
 select pg_temp.as_user('bbbbbbbb-0000-0000-0000-000000000002');
@@ -48,7 +48,7 @@ select throws_ok($$ insert into public.audit_events (team_id, action, resource_t
 -- Anonymous: no tables, no RPC (all public access goes through the app server) ------
 select set_config('role', 'anon', true), set_config('request.jwt.claims', '{"role":"anon"}', true);
 select throws_ok($$ select * from public.published_plans $$, '42501', null, 'anon cannot read publications');
-select throws_ok($$ select public.get_published_snapshot('x', repeat('a', 64)) $$, '42501', null, 'anon cannot call the lookup directly (no limit bypass)');
+select throws_ok($$ select public.get_published_snapshot('x', repeat('a', 64), 'view') $$, '42501', null, 'anon cannot call the lookup directly (no limit bypass)');
 select throws_ok($$ select * from public.share_lookup_counters $$, '42501', null, 'anon cannot see rate counters');
 
 -- App server (service_role) ---------------------------------------------------------

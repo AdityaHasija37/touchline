@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Download } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { Viewer } from "@/components/slides/viewer";
 import { buildSlides } from "@/lib/domain/slides";
@@ -12,25 +13,31 @@ export function PublicBriefing() {
   const [state, setState] = useState<State>({ kind: "loading" });
 
   useEffect(() => {
-    const token = window.location.hash.slice(1);
-    let cancelled = false;
+    let current = 0;
     const load = async () => {
+      // Each load gets a ticket; a newer link (hash change) supersedes any request still in flight.
+      const ticket = ++current;
+      const token = window.location.hash.slice(1);
+      setState({ kind: "loading" });
       if (!token) return setState({ kind: "unavailable" });
       try {
         const res = await fetch("/api/briefing", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token }), cache: "no-store" });
-        if (cancelled) return;
+        if (ticket !== current) return;
         if (res.status === 429) return setState({ kind: "limited" });
         if (res.status === 404) return setState({ kind: "unavailable" });
         if (!res.ok) return setState({ kind: "error" });
         const body = (await res.json()) as { snapshot: Snapshot };
-        setState({ kind: "ok", snapshot: body.snapshot });
+        if (ticket === current) setState({ kind: "ok", snapshot: body.snapshot });
       } catch {
-        if (!cancelled) setState({ kind: "error" });
+        if (ticket === current) setState({ kind: "error" });
       }
     };
     void load();
+    // Opening another share link in the same tab only changes the fragment, with no page load.
+    window.addEventListener("hashchange", load);
     return () => {
-      cancelled = true;
+      current++;
+      window.removeEventListener("hashchange", load);
     };
   }, []);
 
@@ -42,6 +49,7 @@ export function PublicBriefing() {
         teamColor={s.team.color}
         matchLabel={`${s.team.name} vs ${s.match.opponent}`}
         banner={<p className="sr-only">Read-only matchday briefing.</p>}
+        actions={<DownloadPdf />}
       />
     );
   }
@@ -61,5 +69,42 @@ export function PublicBriefing() {
       </h1>
       {message.body && <p className="max-w-sm text-zinc-400">{message.body}</p>}
     </div>
+  );
+}
+
+/** EXP-01 for players: POSTs the token (never a URL) and saves the returned PDF. */
+function DownloadPdf() {
+  const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const download = async () => {
+    setBusy(true);
+    setFailed(false);
+    try {
+      const res = await fetch("/api/briefing/pdf", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token: window.location.hash.slice(1) }) });
+      if (!res.ok) throw new Error(String(res.status));
+      const name = /filename="([^"]+)"/.exec(res.headers.get("Content-Disposition") ?? "")?.[1] ?? "briefing.pdf";
+      const url = URL.createObjectURL(await res.blob());
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = name;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      setFailed(true);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <button
+      type="button"
+      onClick={download}
+      disabled={busy}
+      className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-sm text-zinc-300 hover:bg-zinc-800 focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:outline-none disabled:opacity-60"
+    >
+      <Download className="size-4" aria-hidden />
+      {busy ? "Preparing…" : failed ? "Retry PDF" : "PDF"}
+      <span className="sr-only"> download of this briefing</span>
+    </button>
   );
 }

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { AlertTriangle, CheckCircle2, Copy, Link2Off, MonitorPlay, RefreshCw, Send, ShieldAlert, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Copy, Download, Link2Off, MonitorPlay, RefreshCw, Send, ShieldAlert, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { LocalTime } from "@/components/app/local-time";
 import { slideLabel } from "@/components/slides/slide-view";
@@ -192,6 +192,9 @@ export function PublishPanel(p: Props) {
                 <Link href={`/app/plans/${p.planId}/present`} className={buttonVariants({ variant: "outline" })}>
                   <MonitorPlay aria-hidden /> Present published briefing
                 </Link>
+                <a href={`/api/plans/${p.planId}/pdf`} download className={buttonVariants({ variant: "outline" })}>
+                  <Download aria-hidden /> Download PDF
+                </a>
                 <Button variant="outline" disabled={pending} onClick={rotate}>
                   <RefreshCw aria-hidden /> Get a new link
                 </Button>

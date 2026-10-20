@@ -9,6 +9,7 @@ import { boardFromFormation, formationsFor } from "@/lib/domain/formations";
 import type { MatchFormat } from "@/lib/domain/format";
 import { fieldErrorsOf, type ActionState } from "@/lib/validation/form";
 import { TACTIC_CATEGORIES, boardSchema, tacticNameSchema } from "@/lib/validation/board";
+import { track } from "@/lib/analytics/track";
 
 const uuid = z.uuid();
 const NOT_FOUND: ActionState = { status: "error", message: "That tactic no longer exists or you don't have access." };
@@ -143,6 +144,7 @@ export async function saveTacticBoard(tacticId: string, board: unknown, expected
     const { data: again } = await supabase.from("tactics").select("version").eq("id", tacticId).maybeSingle();
     return again ? { status: "conflict", serverVersion: again.version } : { status: "not_found" };
   }
+  await track("tactic_saved", current.team_id, { format: parsed.data.format, object_count: parsed.data.objects.length });
   revalidatePath(`/app/teams/${current.team_id}/tactics`);
   return { status: "saved", version: data[0].version, savedAt: data[0].updated_at };
 }

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Viewer } from "@/components/slides/viewer";
 import { loadPlanForPublishing } from "@/lib/db/publications";
 import { buildSlides } from "@/lib/domain/slides";
+import { track } from "@/lib/analytics/track";
 
 export const metadata: Metadata = { title: "Present · Touchline" };
 
@@ -12,9 +13,11 @@ export default async function PresentPage({ params, searchParams }: PageProps<"/
   const { view, team, publication, draft } = await loadPlanForPublishing(planId);
   const useDraft = source === "draft" || !publication;
   const snapshot = useDraft ? draft(new Date(0).toISOString()) : publication!.snapshot;
+  const slides = buildSlides(snapshot);
+  if (!useDraft) await track("presentation_opened", team.id, { viewer_type: "owner", slide_count: slides.length });
   return (
     <Viewer
-      slides={buildSlides(snapshot)}
+      slides={slides}
       teamColor={team.primaryColor}
       matchLabel={`${team.name} vs ${view.match.opponentName}`}
       exitHref={`/app/plans/${planId}/publish`}

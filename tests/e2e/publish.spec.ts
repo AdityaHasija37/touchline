@@ -195,3 +195,15 @@ test("owner presenter works with the keyboard; other users can't reach publish o
   }
   await other.close();
 });
+
+test("opening a different share link in the same tab shows that briefing, not the previous one", async ({ page, browser }) => {
+  await readyPlan(page, "hashswap");
+  const url = await publish(page);
+  const { ctx, page: player } = await openAsPlayer(browser, url);
+  await expect(player.getByRole("heading", { name: "vs Dynamos" })).toBeVisible();
+  await player.evaluate(() => (window.location.hash = "#AbCdEfGhIjKlMnOpQrStUvWxYz0123456789_-abcde"));
+  await expect(player.getByRole("heading", { name: "Briefing unavailable" })).toBeVisible();
+  await player.evaluate((h) => (window.location.hash = h), url.split("#")[1]);
+  await expect(player.getByRole("heading", { name: "vs Dynamos" })).toBeVisible();
+  await ctx.close();
+});

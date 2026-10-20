@@ -23,7 +23,21 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "audit_events": {
+            "analytics_events": {
+                  Row: {
+                    "created_at": string,"event": string,"id": number,"props": NonNullable<Json>,"team_ref": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"event": string,"id"?: never,"props"?: NonNullable<Json>,"team_ref": string
+                  }
+                  Update: {
+                    "created_at"?: string,"event"?: string,"id"?: never,"props"?: NonNullable<Json>,"team_ref"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"audit_events": {
                   Row: {
                     "action": string,"actor_id": string,"created_at": string,"id": string,"resource_id": string,"resource_type": string,"team_id": string | null
                   }
@@ -225,14 +239,14 @@ isOneToOne: false
                   ]
                 },"teams": {
                   Row: {
-                    "created_at": string,"id": string,"match_format": number,"name": string,"owner_id": string,"primary_color": string,"updated_at": string
+                    "analytics_id": string,"created_at": string,"id": string,"match_format": number,"name": string,"owner_id": string,"primary_color": string,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"id"?: string,"match_format": number,"name": string,"owner_id"?: string,"primary_color"?: string,"updated_at"?: string
+                    "analytics_id"?: string,"created_at"?: string,"id"?: string,"match_format": number,"name": string,"owner_id"?: string,"primary_color"?: string,"updated_at"?: string
                   }
                   Update: {
-                    "created_at"?: string,"id"?: string,"match_format"?: number,"name"?: string,"owner_id"?: string,"primary_color"?: string,"updated_at"?: string
+                    "analytics_id"?: string,"created_at"?: string,"id"?: string,"match_format"?: number,"name"?: string,"owner_id"?: string,"primary_color"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     
@@ -243,8 +257,11 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "get_published_snapshot":
-{ Args: { "p_client_hash": string,"p_token": string }; Returns: Json
+            "analytics_props_ok":
+{ Args: { "p_event": string,"p_props": Json }; Returns: boolean
+                           },
+"get_published_snapshot":
+{ Args: { "p_client_hash": string,"p_purpose"?: string,"p_token": string }; Returns: Json
                            },
 "is_match_owner":
 { Args: { "p_match_id": string }; Returns: boolean
@@ -263,6 +280,9 @@ isOneToOne: false
                            },
 "save_lineup":
 { Args: { "p_lineup": Json,"p_plan_id": string }; Returns: undefined
+                           },
+"track_event":
+{ Args: { "p_event": string,"p_props"?: Json,"p_team_id": string }; Returns: undefined
                            }
           }
           Enums: {
