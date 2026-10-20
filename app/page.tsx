@@ -125,10 +125,17 @@ export default async function Home({ searchParams }: PageProps<"/">) {
 
       <footer className="border-t">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 py-6 text-sm text-muted-foreground sm:px-6">
-          <span>Touchline is an early product built as a portfolio project.</span>
-          <Link href="/privacy" className="hover:underline">
-            Privacy
-          </Link>
+          <span>
+            Created by <span className="font-medium text-foreground">Aditya Hasija</span> · an early product built as a portfolio project.
+          </span>
+          <div className="flex gap-4">
+            <a href="https://github.com/AdityaHasija37/touchline" className="underline underline-offset-4 hover:text-foreground">
+              GitHub
+            </a>
+            <Link href="/privacy" className="underline underline-offset-4 hover:text-foreground">
+              Privacy
+            </Link>
+          </div>
         </div>
       </footer>
     </div>
